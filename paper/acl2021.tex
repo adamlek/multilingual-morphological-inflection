@@ -120,23 +120,23 @@ across all languages.
 
 \subsection{Model}
 
-We employ a encoder-decoder architecture with attention. First we use
+We employ a encoder-decoder architecture with attention. First\jp{where is Second?} we use
 a LSTM to obtain a contextual representation for each word in the
-lemma. We encode the tags using a self-attention module, as the order
-or the tags does not matter.
+lemma. We encode the tags using a self-attention module\jp{what is that? be more precise}, as the order
+of the tags does not matter.\jp{tags were never defined. I suppose a description of the task should come before, defining: lemma, tags, inflected form, etc.}
 
-The encoder has three parts, a LSTM generator and two attention
+The encoder has three parts, a LSTM generator\jp{rnn?} and two attention
 modules, one attending to the lemma and one attending to the tags. For
 the lemma attention we use a content-based attention module [REF] as
-it helps facilitate the copy mechanism. [Cosim attention details...]
-However, only using cosim attention was shown to have pitfalls, as it
-mainly focused on the most similar characters in the lemma it ignored
+it facilitates the copy mechanism. [Cosim attention details...]
+However, only using cosim\jp{not introduced} attention was shown to have pitfalls\jp{citation needed}, as it
+mainly focused on the most similar\jp{similar to what?} characters in the lemma it ignored
 contextual cues relevant for the generation.
 
 To remedy this, we combine the cosine attention with additive
 attention as follows, where superscript $cos$ indicate cosine attention,
-$add$ additive attention and $k$ the key:
-
+$add$ additive attention and $k$ the key:\jp{a^{add} has conflicting definitions}
+\jp{Don't use text for functions. mathrm is similar but better for typography.}
 \begin{align*}
 	a^{add} & = k^\top\text{tanh}(W_ah + W_bh)\\
     a^{add} & = \text{softmax}(a^{add})\\
@@ -145,7 +145,7 @@ $add$ additive attention and $k$ the key:
 	att^{cos} & = \sum_{t=1}^{T}a_t^{cos}h_t^{cos}\\
 	att & = W[att^{cos}; att^{add}]
 \end{align*}
-
+\jp{What is h? Softabs? }
 We employ additive attention for the tags. In each step we pass the
 concatenation of the character embedding obtained from the previous
 step, the lemma attention and the tag attention to the decoder.
@@ -158,9 +158,9 @@ step, the lemma attention and the tag attention to the decoder.
 
 \subsection{Multi-task learning}
 
-We consider the fact that strings may be transformed using operations
+Strings may be transformed using operations
 as an additional resource when generating inflections [REF]. 
-We break down the task of applying levenshtein-distance operations
+We break down the task of applying levenshtein-distance\jp{never introduced. Why do you want to do this?} operations
 into two sub-tasks: lemma-reductions, where we predict the copy and
 deletion operations and lemma-additions, where we predict the copy and
 addition operations. 
@@ -175,18 +175,18 @@ from the decoder.
 
 We use the easy-first curriculum strategy [REF] to sort the data after
 each epoch. For all examples in the batch we sort them according to
-the loss, in ascending order such that the easy (low loss) occur
+the loss obtained in the previous epoch, in ascending order such that the easy (low loss) occurs
 before the difficult examples (high loss).  
 
 For the first epoch, when we dont have any loss for the examples, we
 sort the dataset according to the ratio of copy levenshtein-operations
-to other operations. We found that this strategy performs the best
-among set of initial strategies \footnote{We experimented with: fewest
-addition-operations, least-grammatical-features, and random.}
+to other operations (delete or add). We found that this strategy
+performed better than any of the other strategies which we tested:
+fewest addition-operations, least-grammatical-features, and random.\jp{by how much?}
 
 \subsection{Scheduled Sampling}
 
-It has been shown that models trained with teacher-forcing may suffer
+It has been shown that models trained with teacher-forcing\jp{what's that?} may suffer
 at inference time, due to not generating new characters given the
 model output, but rather given gold characters. To address this issue
 we use scheduled sampling [REF]. 
@@ -199,29 +199,29 @@ probability of selecting the gold for each example every time-step.
 
 \subsection{Training}
 
-We use KL-divergence loss for the characters and cross-entropy loss
+We use KL-divergence loss for the characters\jp{Why not cross-entropy?} and cross-entropy loss
 for both the lemma-reduction and lemma-addition tasks. Our final loss
 function consists of the character generation loss, the
 lemma-reduction and the lemma-addition losses summed.
 
 \paragraph{Language-wise Label smoothing} We use language-wise label
 smoothing to calculate the loss. This means that we remove $\alpha$
-probability from the correct character and distribute $\alpha$
-uniformly across the characters belonging to the words language. A
+from the probability of the correct character and distribute the same $\alpha$
+uniformly across the probabilities of the characters belonging to the words language. A
 thing to consider is that we calculate the language membership of
 characters from the training set only, so we don't want to let
 $\alpha$ be to large, as some characters in the development and test
-set may not be accounted for.
+set may not be accounted for.\jp{Isn't that precisely what label smoothing is for?}
 
-\paragraph{Learning rate decay with a Curriculum} The outputs will be
-sorted by the diffiulty in the previous epoch, to further follow the
-easy-first learning idea we employ decaying learning rate. This has
+\paragraph{Learning rate decay with a Curriculum} The outputs\jp{of what? in training isn't everything input?} will be
+sorted by the difficulty in the previous epoch. To further follow the
+easy-first learning idea we employ decaying learning rate.\jp{Imo this is orthogonal?} This has
 the effect that a model update its parameters \textit{more} on the
 easy examples and less on difficult examples. The idea is that the
 morphological processes involved in more difficult words can be
 discovered from the operations involved in the easier examples.
 
-The hyperparameters used for training are presented in Table X below.
+The hyperparameters used for training are presented in \cref{tab:hp} below.
 \begin{table}[h]	
 \centering
 \begin{tabular}{lc}
@@ -256,7 +256,7 @@ The hyperparameters used for training are presented in Table X below.
 \subsection{Ablation Study}
 
 We perform an ablation study to estimate the effect of our various
-additional training strategies.
+additional training strategies.\jp{Not sure if ablation is the right word here.}
 
 
 
