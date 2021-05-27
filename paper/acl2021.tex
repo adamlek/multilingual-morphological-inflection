@@ -86,7 +86,7 @@ We are particularly interested in how far we can get using a simple
 LSTM sequence-to-sequence model with attention, augmented with
 training procedures informed by human heuristics.
 
-In particular, we consider the following training augmentations:\jp{strategies?}
+In particular, we consider the following training strategies:
 
 \begin{itemize}
 \item Curriculum learning: In this module we augment the order in which the examples are presented to the model
@@ -97,19 +97,35 @@ In particular, we consider the following training augmentations:\jp{strategies?}
 
 \section{Related work}
 
+\section{Task}
+
+The task is to ... 
+
+- tag
+- lemma
+- prediction (inflected form)
+
+[perhaps: Describe edition tasks here as well (as auxiliary tasks)]
+
 \section{Data}
 
 The data released cover 37 languages of varying typology and
-geneology, [stuff...]. The data for the diffrent languges vary greatly
+geneology, [stuff...]. The data for the different languges vary greatly
 in size, presenting a unique challange to multilingual systems.
 
-For the low-resourced languages we use \textbf{hallucinated data}\jp{mandated by the task or data augmentation?}. We
-follow [REF] and consider the parts of a lemma overlapping with the
-inflected form as candidates for replacement.
+For the low-resourced languages we produce \textbf{hallucinated data}
+to train on. We follow [REF], and produce an inflected from by textual
+replacement of the parts of a inflected form which overlap with the
+lemma a new lemma. (For example if the training data contains the pair
+(\textbf{run},\textbf{run}ning) we may add the pair
+(\textbf{cut},\textbf{cut}ning).
 
-We note that certain languages in the data use phonological symbols
-and separators, we hallucinate in such a way that we dont break apart
-morphemes.
+\jp{How much of the data is generated this way?}
+
+We improve upon [REF] in the following way.
+Noting that certain languages in the data use phonological symbols
+and separators, we hallucinate in such a way that we don't break apart
+morphemes.\jp{An example will help.}
 
 
 \section{Method}
@@ -120,49 +136,55 @@ across all languages.
 
 \subsection{Model}
 
-We employ a encoder-decoder architecture with attention. First\jp{where is Second?} we use
-a LSTM to obtain a contextual representation for each word in the
-lemma. We encode the tags using a self-attention module\jp{what is that? be more precise}, as the order
-of the tags does not matter.\jp{tags were never defined. I suppose a description of the task should come before, defining: lemma, tags, inflected form, etc.}
+We employ a encoder-decoder architecture with attention. The first
+layer in the model is comprised of an LSTM, which produces a
+contextual representation for each character in the lemma.
 
-The encoder has three parts, a LSTM generator\jp{rnn?} and two attention
-modules, one attending to the lemma and one attending to the tags. For
-the lemma attention we use a content-based attention module [REF] as
-it facilitates the copy mechanism. [Cosim attention details...]
-However, only using cosim\jp{not introduced} attention was shown to have pitfalls\jp{citation needed}, as it
-mainly focused on the most similar\jp{similar to what?} characters in the lemma it ignored
-contextual cues relevant for the generation.
+We encode the tags using a self-attention module (equivalent to a 1-head transformer layer).
+This layer does not use any positional data: indeed the order of the tags does not matter.
+
+We use an LSTM decoder with two attention modules. One attending to
+the lemma and one to the tags. For the lemma attention we use a
+content-based attention module which uses cosine similarity (called
+Cosim by [REF]), which facilitates the copy mechanism.  However, we
+found that using Cosim attention only causes attention to be too
+focused on a single character, and mostly ignored contextual cues
+relevant for the generation.
 
 To remedy this, we combine the cosine attention with additive
 attention as follows, where superscript $cos$ indicate cosine attention,
-$add$ additive attention and $k$ the key:\jp{\(a^{add}\) has conflicting definitions}
-\jp{Don't use text for functions. mathrm is similar but better for typography.}
+$add$ additive attention and $k$ the key:
+\jp{
+  1. Double-check the code.
+  2. Use another naming than additive (I think it's multiplicative)}
+
 \begin{align*}
-	a^{add} & = k^\top\text{tanh}(W_ah + W_bh)\\
-    a^{add} & = \text{softmax}(a^{add})\\
+	a^{add} & = \mathsf{softmax}(k^\top\mathsf{tanh}(W_ah + W_bh))\\
 	att^{add} & = \sum_{t=1}^{T}a_t^{add}h_t^{add}\\
-	a^{cos} & = \text{softabs}(cos(k,h))\\
+	a^{cos} & = \mathsf{softabs}(cos(k,h))\\
 	att^{cos} & = \sum_{t=1}^{T}a_t^{cos}h_t^{cos}\\
 	att & = W[att^{cos}; att^{add}]
 \end{align*}
-\jp{What is h? Softabs? }
+(in the above $h_t$ refers to the encoder's contextual representation for each character.)
 We employ additive attention for the tags. In each step we pass the
 concatenation of the character embedding obtained from the previous
 step, the lemma attention and the tag attention to the decoder.
 
-\begin{equation*}
-\text{input}_t = [e_{t-1}; att_{char}; att_{tag}]
-\end{equation*}
-
-
+% \[\text{input}_t = [e_{t-1}; att_{char}; att_{tag}]\]
 
 \subsection{Multi-task learning}
 
-Strings may be transformed using operations
-as an additional resource when generating inflections [REF]. 
-We break down the task of applying levenshtein-distance\jp{never introduced. Why do you want to do this?} operations
-into two sub-tasks: lemma-reductions, where we predict the copy and
-deletion operations and lemma-additions, where we predict the copy and
+Instead of predicting the inflected form, one can also predict the
+operations needed to transform the lemma into the inflected form
+[REF].
+
+We find that making \emph{both} predictions, as a multitask setup,
+improves the performance of the system.
+
+\jp{add an example; re-check this later --- mention that changing the length is an issue}
+We break down the task of applying levenshtein-distance operations
+into two sub-tasks: \textbf{lemma-reductions}, where we predict the copy and
+deletion operations and \textbf{lemma-additions}, where we predict the copy and
 addition operations. 
 
 For each sub-task we predict the operation based on the hidden states
@@ -182,44 +204,56 @@ For the first epoch, when we dont have any loss for the examples, we
 sort the dataset according to the ratio of copy levenshtein-operations
 to other operations (delete or add). We found that this strategy
 performed better than any of the other strategies which we tested:
-fewest addition-operations, least-grammatical-features, and random.\jp{by how much?}
+fewest addition-operations, least-grammatical-features, and random.
+
+This strategy causes a small, but consistent improvement in the loss
+of the first epoch, which persists throughout the learning process.=
 
 \subsection{Scheduled Sampling}
 
-It has been shown that models trained with teacher-forcing\jp{what's that?} may suffer
-at inference time, due to not generating new characters given the
-model output, but rather given gold characters. To address this issue
-we use scheduled sampling [REF]. 
+\jp{add a sentence explaining teacher-forcing}
+
+It has been shown that models trained with teacher-forcing may suffer
+at inference time. Indeed, they have never been exposed to a partially
+incorrect input in the training phase.  To address this issue we use
+scheduled sampling [REF].
 
 We implement a simple schedule for calculating the probability of
-using the gold characters or hidden stats by using a global
-sample-probability variable which is updated at each epoch. Each epoch
-we decrease the initial probability of 100\% by 4\%. We sample the
-probability of selecting the gold for each example every time-step.
+using the gold characters or the model's prediction by using a global
+sample-probability variable which is updated at each epoch. We start
+with a probability \(\rho\) of 100\% to take the gold. At each epoch
+we decrease it by 4\%. For each character, we take sample from the
+Bernoulli distribution of parameter \(\rho\) to determine the
+decision to make.
 
 \subsection{Training}
 
-We use KL-divergence loss for the characters\jp{Why not cross-entropy?} and cross-entropy loss
-for both the lemma-reduction and lemma-addition tasks. Our final loss
-function consists of the character generation loss, the
-lemma-reduction and the lemma-addition losses summed.
+We use KL-divergence loss for the characters\jp{But the entropy of the
+  label distribution is constant? So this is a red flag. If it's a
+  workaround for a bug in pytorch, this should come down to a
+  footnote.} and cross-entropy loss for both the lemma-reduction and
+lemma-addition tasks. Our final loss function consists of the
+character generation loss, the lemma-reduction and the lemma-addition
+losses summed.
 
 \paragraph{Language-wise Label smoothing} We use language-wise label
 smoothing to calculate the loss. This means that we remove $\alpha$
-from the probability of the correct character and distribute the same $\alpha$
-uniformly across the probabilities of the characters belonging to the words language. A
-thing to consider is that we calculate the language membership of
-characters from the training set only, so we don't want to let
-$\alpha$ be to large, as some characters in the development and test
-set may not be accounted for.\jp{Isn't that precisely what label smoothing is for?}
+from the probability of the correct character and distribute the same
+$\alpha$ uniformly across the probabilities of the characters
+belonging to the language of the word. However, each language
+potentially uses a different set of characters. We calculate this set
+using the the training set only--- so it is important to make $\alpha$
+not too large, so that the model does not completely exclude unseen
+characters from its prediction at test-time. (We found that
+\(\alpha=2.5\%\) is a good value.)
 
-\paragraph{Learning rate decay with a Curriculum} The outputs\jp{of what? in training isn't everything input?} will be
-sorted by the difficulty in the previous epoch. To further follow the
-easy-first learning idea we employ decaying learning rate.\jp{Imo this is orthogonal?} This has
-the effect that a model update its parameters \textit{more} on the
-easy examples and less on difficult examples. The idea is that the
-morphological processes involved in more difficult words can be
-discovered from the operations involved in the easier examples.
+\paragraph{Learning rate decay with a Curriculum} The training
+examples will be sorted by the difficulty in the previous epoch.  We
+note that employing a decaying learning rate has the effect that a
+model update its parameters \textit{more} on the easy examples and
+less on difficult examples. The idea is that the morphological
+processes involved in more difficult words can be discovered from the
+operations involved in the easier examples.
 
 The hyperparameters used for training are presented in \cref{tab:hp} below.
 \begin{table}[h]	
