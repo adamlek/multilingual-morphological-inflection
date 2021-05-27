@@ -1,4 +1,4 @@
-%
+x%
 % File acl2021.tex
 %
 %% Based on the style files for EMNLP 2020, which were
@@ -20,6 +20,9 @@
 \renewcommand{\UrlFont}{\ttfamily\small}
 \usepackage{amsmath,amsfonts,amssymb}
 \usepackage[noabbrev,capitalize]{cleveref}
+\usepackage{xargs}
+\usepackage[colorinlistoftodos,prependcaption,textsize=tiny]{todonotes}
+\newcommandx{\jp}[2][1=]{\todo[linecolor=purple,backgroundcolor=purple!25,bordercolor=purple,#1]{#2}}
 
 % This is not strictly necessary, and may be commented out,
 % but it will improve the layout of the manuscript,
@@ -83,7 +86,7 @@ We are particularly interested in how far we can get using a simple
 LSTM sequence-to-sequence model with attention, augmented with
 training procedures informed by human heuristics.
 
-In particular, we consider the following training augmentations:
+In particular, we consider the following training augmentations:\jp{strategies?}
 
 \begin{itemize}
 \item Curriculum learning: In this module we augment the order in which the examples are presented to the model
@@ -97,10 +100,10 @@ In particular, we consider the following training augmentations:
 \section{Data}
 
 The data released cover 37 languages of varying typology and
-geneology, [stuff...]. The data for the diffrent languges vary gratly
+geneology, [stuff...]. The data for the diffrent languges vary greatly
 in size, presenting a unique challange to multilingual systems.
 
-For the low-resourced languages we use \textbf{hallucinated data}. We
+For the low-resourced languages we use \textbf{hallucinated data}\jp{mandated by the task or data augmentation?}. We
 follow [REF] and consider the parts of a lemma overlapping with the
 inflected form as candidates for replacement.
 
