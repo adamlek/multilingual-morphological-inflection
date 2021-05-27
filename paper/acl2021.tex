@@ -55,6 +55,13 @@
 \begin{document}
 \maketitle
 \begin{abstract}
+something something something something something something
+something something something something something something
+something something something something something something
+something something something something something something
+something something something something something something
+something something something something something something
+something something something 
 \end{abstract}
 
 \section{Introduction}
@@ -81,8 +88,8 @@ In particular, we consider the following training augmentations:
 \begin{itemize}
 \item Curriculum learning: In this module we augment the order in which the examples are presented to the model
 \item Multi-task learning: We consider the formal operations required to transform a lemma into its inflected form
-\item Label smooothing: When calculating the loss, some wrong predictions are better than others. We augment the loss function to consider selecting characters from the target language as ``better'' than selecting characters from other languages.
-\item Scheduled sampling: During training, we use a probability distribution to determine whether to present the system with the gold character or the previously generated character.
+\item Language-wise label smooothing: We smooth the loss function when it predict a character from the correct language
+\item Scheduled sampling: Rather than decoding with the gold as input, we use a probability distribution to determine whether to use the previous output of the gold as input
 \end{itemize}
 
 \section{Related work}
@@ -96,6 +103,10 @@ in size, presenting a unique challange to multilingual systems.
 For the low-resourced languages we use \textbf{hallucinated data}. We
 follow [REF] and consider the parts of a lemma overlapping with the
 inflected form as candidates for replacement.
+
+We note that certain languages in the data use phonological symbols
+and separators, we hallucinate in such a way that we dont break apart
+morphemes.
 
 
 \section{Method}
@@ -240,6 +251,27 @@ The hyperparameters used for training are presented in Table X below.
 
 
 \subsection{Ablation Study}
+
+We perform an ablation study to estimate the effect of our various
+additional training strategies.
+
+
+
+\begin{table}[h]	
+\centering
+\begin{tabular}{lc}
+\textsc{Module} & \textsc{Accuracy} \\
+  \hline
+  All  & \\
+  Lemma-reduction & \\
+  Lemma-addition & \\
+  Scheduled sampling & \\
+  Label smoothing & \\
+  Curriculum learning & \\
+\end{tabular} 
+\caption{Abl}
+\label{tab:abl}
+\end{table}
 
 \section{Discussion}
 
