@@ -123,47 +123,73 @@ something something something
 
 Morphological inflection is the task of transforming a lemma to its
 inflected form given a set of grammatical features. 
-[Transition to task...]
 The task requires a model to recognize which morphological processes
-should be applied to the word, such as affixing, deletion or
-reduplication, 
-[Typological diversity ...]
-[Research problems ...]
+should be applied to the word, such as affixing, circumfixing and
+reduplication, among others. 
 
-In this paper we explore different training schemas for neural
-networks, in a multilingual model for morphological inflection in 37
-different languages.
+The worlds languages exhibit a large variety of strategies. In
+addition to the morphological processes, languages use different
+strategies to encode the grammatical features. Typically, languages
+fall into a spectrum ranging from agglutinative to isolating. In
+agglutinative languages grammatical features are encoded with
+morphemes attached to a lemma, while in isolating languages each
+grammatical feature is repersented as a lemma.
 
-We are particularly interested in how far we can get using a simple
-LSTM sequence-to-sequence model with attention, augmented with
-training procedures informed by human heuristics.
+Several systems for inflecting words have been implemented both using
+statistial and rule-bsed methods. In rule-based methods rules for
+transformatins of strings are identified and applied accordingly. In
+this paper we focus on morphological inflection with neural networks,
+specifically, multilingual systems. In a multilingual system, a single
+model is developed to process multiple languages, such that we can
+give it either a word in for example Swedish or Evenk that will be
+inflected.
 
-In particular, we consider the following training strategies:
+This is a challenging problem as language recources for many languages
+is scarce, so a multilingual system must be able to model inflectional
+processes given varying amounts of data. In this paper we mainly focus
+on \emph{training strategies} for multilingual systems. That is, given
+a baseline system, which augmentations to the training schema help a
+model to produce ...
+
+
+%In this paper we explore different training schemas for neural
+%networks, in a multilingual model for morphological inflection in 37
+%different languages.
+
+%We are particularly interested in how far we can get using a simple
+%LSTM sequence-to-sequence model with attention, augmented with
+%training procedures informed by human heuristics.
+
+We employ a LSTM encoder-decoder architecture with attention as our
+base model and consider the following training strategies:
 
 \begin{itemize}
-\item Curriculum learning: In this module we augment the order in which the examples are presented to the model
-\item Multi-task learning: We consider the formal operations required to transform a lemma into its inflected form
-\item Language-wise label smooothing: We smooth the loss function when it predict a character from the correct language
-\item Scheduled sampling: Rather than decoding with the gold as input, we use a probability distribution to determine whether to use the previous output of the gold as input
+\item Curriculum learning: We augment the order in which the examples are presented to the model based on the loss.
+\item Multi-task learning: We predict the formal operations required to transform a lemma into its inflected form.
+\item Language-wise label smooothing: We smooth the loss function to not penalize the model as much when it predicts a character from the correct language.
+\item Scheduled sampling: We use a probability distribution to determine whether to use the previous output or the gold as input when decoding.
 \end{itemize}
-
-\section{Related work}
 
 \section{Task}
 
-The task is to ... 
+As mentioned previously the task of morphological inflection is to
+predict the \emph{inflectional form} of a lemma (the ``base'' form of
+a word) given a set of grammatical features (such as \texttt{tense} or
+\texttt{person}).
+%
+%- tag
+%- lemma
+%- prediction (inflected form)
 
-- tag
-- lemma
-- prediction (inflected form)
-
-[perhaps: Describe edition tasks here as well (as auxiliary tasks)]
+%[perhaps: Describe edition tasks here as well (as auxiliary tasks)]
 
 \section{Data}
 
-The data released cover 37 languages of varying typology and
-geneology, [stuff...]. The data for the different languges vary greatly
-in size, presenting a unique challange to multilingual systems.
+The data released cover $37$ languages of varying typology, geneology,
+grammatical featues and morphological processes. The data for the
+different languges vary greatly in size, from $138$ examples (Ludic) to
+$100310$ (Turkish) presenting a unique challange to multilingual
+systems.
 
 For the low-resourced languages we produce \textbf{hallucinated data}
 to train on. We follow [REF], and produce an inflected form by
@@ -175,11 +201,15 @@ replacing the parts of a inflected form which overlap with the lemma.
 \caption{A example of the data hallucination process.}
 \end{figure}
 
-%ŋitin
+We make several additions, when replacing a sequence of characters we
+consider combinations of $[1,2,3,4]$-grams. We allow for the
+replacement sequence to vary in size, potentially adding or removing 2
+characters. Additionally, we don't consider subsequences which include
+a phonological symbol.  For each language with fewer than 10 000
+examples, we sample 10 000 new examples. A visualization of the number
+of examples in each language is shown in
 
-For each language with fewer than 10 000 examples, we sample 20 000
-new examples.  %\jp{How much of the data is generated this way?}
-
+\begin{figure}[ht]
 \begin{tikzpicture}
     \begin{axis}[
         ybar stacked,
@@ -190,6 +220,8 @@ new examples.  %\jp{How much of the data is generated this way?}
             cells={anchor=west},
             legend pos=north east,
         },
+        width=\columnwidth*1.15,
+        height=150pt,
         /pgf/bar width=4pt,
         reverse legend=true,
         %xtick={100, 1000, 10000, 100000},
@@ -209,6 +241,8 @@ new examples.  %\jp{How much of the data is generated this way?}
                     \addlegendentry{hallucinated}
     \end{axis}
 \end{tikzpicture}
+\caption{\label{fig:data} Number of natural and hallucinated examples in each language.}
+\end{figure}
 
 We improve upon [REF] in the following way.
 Noting that certain languages in the data use phonological symbols
@@ -228,16 +262,16 @@ We employ a encoder-decoder architecture with attention. The first
 layer in the model is comprised of an LSTM, which produces a
 contextual representation for each character in the lemma.
 
-We encode the tags using a self-attention module (equivalent to a 1-head transformer layer).
-This layer does not use any positional data: indeed the order of the tags does not matter.
+We encode the tags using a self-attention module (equivalent to a
+1-head transformer layer).  This layer does not use any positional
+data: indeed the order of the tags does not matter.
 
 We use an LSTM decoder with two attention modules. One attending to
 the lemma and one to the tags. For the lemma attention we use a
 content-based attention module which uses cosine similarity (called
-Cosim by [REF]), which facilitates the copy mechanism.  However, we
-found that using Cosim attention only causes attention to be too
-focused on a single character, and mostly ignored contextual cues
-relevant for the generation.
+Cosim by [REF]).  However, we found that using Cosim attention only
+causes attention to be too focused on a single character, and mostly
+ignored contextual cues relevant for the generation.
 
 To remedy this, we combine the cosine attention with additive
 attention as follows, where superscript $cos$ indicate cosine attention,
@@ -263,47 +297,58 @@ step, the lemma attention and the tag attention to the decoder.
 \subsection{Multi-task learning}
 
 Instead of predicting the inflected form, one can also predict the
-operations needed to transform the lemma into the inflected form
-[REF].
+levenshtein operations needed to transform the lemma into the
+inflected form [REF].
 
 We find that making \emph{both} predictions, as a multitask setup,
 improves the performance of the system.
 
-%\jp{add an example; re-check this later --- mention that changing the length is an issue}
-We break down the task of applying levenshtein-distance operations
-into two sub-tasks: \textbf{lemma-reductions}, where we predict the copy and
-deletion operations and \textbf{lemma-additions}, where we predict the copy and
-addition operations. 
+The multi-task setup operates on the character level, thus for each
+contextual representation of a character we want to predict an
+operation. Because \texttt{add} and \texttt{del} change the length, we
+predict two sets of operations, the \textbf{lemma-reductions} and the
+\textbf{lemma-additions}.
 
-For each sub-task we predict the operation based on the hidden states
-generated by our neural network. In the case of lemma-reductions we
-predict the operation on the hidden-states of the encoded lemma. For
-lemma-additions, we predict the operations on the generated characters
-from the decoder.
+%We break down the task of applying levenshtein-distance operations
+%into two sub-tasks: \textbf{lemma-reductions}, where we predict the copy and
+%deletion operations and \textbf{lemma-additions}, where we predict the copy and
+%addition operations. 
+
+\begin{figure}[ht]
+\centering
+\includegraphics[scale=0.5]{ops.pdf}
+\caption{Levenshtein operations mapped to characters in the lemma and inflection.}
+\end{figure}
+
+To predict the operations, we pass the lemma representations from the
+encoder and the generated inflection representations to a single operation
+classification layer.
+
+%For each sub-task we predict the operation based on the hidden states
+%generated by our neural network. In the case of lemma-reductions we
+%predict the operation on the hidden-states of the encoded lemma. For
+%lemma-additions, we predict the operations on the generated characters
+%from the decoder.
 
 \subsection{Curriculum Learning}
 
 We use the easy-first curriculum strategy [REF] to sort the data after
 each epoch. For all examples in the batch we sort them according to
-the loss obtained in the previous epoch, in ascending order such that the easy (low loss) occurs
-before the difficult examples (high loss).  
+the loss obtained in the previous epoch, in ascending order such that
+the easy (low loss) occurs before the difficult examples (high loss).
 
-For the first epoch, when we dont have any loss for the examples, we
-sort the dataset according to the ratio of copy levenshtein-operations
-to other operations (delete or add). We found that this strategy
-performed better than any of the other strategies which we tested:
-fewest addition-operations, least-grammatical-features, and random.
-
+For the first epoch, when we dont have any loss to sort by, we sort
+the dataset according to the ratio of copy operations to other
+operations. We found that this strategy performed better than any of
+the other strategies which we tested: fewest addition-operations,
+least-grammatical-features, and random.
 This strategy causes a small, but consistent improvement in the loss
-of the first epoch, which persists throughout the learning process.=
+of the first epoch, which persists throughout the learning process.
 
 \subsection{Scheduled Sampling}
 
-%\jp{add a sentence explaining teacher-forcing}
-
 Commonly when training a encoder-decoder model the gold is used as input at
 time-step $t$, not the output from the decodet at $t-1$.
-
 It has been shown that models trained with this strategy may suffer
 at inference time. Indeed, they have never been exposed to a partially
 incorrect input in the training phase.  To address this issue we use
@@ -326,9 +371,9 @@ We use cross-entropy loss for the character generation loss and
 %  workaround for a bug in pytorch, this should come down to a
 %  footnote.} 
 %and cross-entropy loss 
-for both the lemma-reduction and lemma-addition tasks. Our final loss
-function consists of the character generation loss, the
-lemma-reduction and the lemma-addition losses summed.
+for the operation predictions tasks. Our final loss function consists
+of the character generation loss, the lemma-reduction and the
+lemma-addition losses summed.
 
 \paragraph{Language-wise Label smoothing} We use language-wise label
 smoothing to calculate the loss. This means that we remove $\alpha$
@@ -407,6 +452,13 @@ reported in TABLE, but train for 15 epochs.
 \end{table}
 
 \section{Discussion}
+
+In this paper we focus on training strategies rather than
+architectural design. An advantage of finding good training strategies
+is that they do not require any additional parameters in the
+model. This allows a model to obtain better representations with fewer
+parameters, thus increasing the quality of representations without
+needing additional encoding parameters.  
 
 \section{Conclusions}
 
