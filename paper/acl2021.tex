@@ -121,11 +121,17 @@ something something something
 
 \section{Introduction}
 
-Morphological inflection is the task of transforming a lemma to its
-inflected form given a set of grammatical features. 
-The task requires a model to recognize which morphological processes
-should be applied to the word, such as affixing, circumfixing and
-reduplication, among others. 
+%Changes in strings typically nakes itself known through two processes,
+%morphological inflection and derivation. In morphological derivation a
+%words part of speech is changed, while in inflection the grammatical
+%functions of the word change.
+
+Morphological inflection is the task of transforming a \emph{lemma} to
+its \emph{inflected form} given a set of \emph{grammatical features}
+(such as \texttt{tense} or \texttt{person}).  The task requires a
+model to recognize which morphological processes should be applied to
+the word, such as affixing, circumfixing and reduplication, among
+others.
 
 The worlds languages exhibit a large variety of strategies. In
 addition to the morphological processes, languages use different
@@ -141,7 +147,7 @@ transformatins of strings are identified and applied accordingly. In
 this paper we focus on morphological inflection with neural networks,
 specifically, multilingual systems. In a multilingual system, a single
 model is developed to process multiple languages, such that we can
-give it either a word in for example Swedish or Evenk that will be
+give it either a word in, for example, Swedish or Evenk that will be
 inflected.
 
 This is a challenging problem as language recources for many languages
@@ -170,12 +176,11 @@ base model and consider the following training strategies:
 \item Scheduled sampling: We use a probability distribution to determine whether to use the previous output or the gold as input when decoding.
 \end{itemize}
 
-\section{Task}
-
-As mentioned previously the task of morphological inflection is to
-predict the \emph{inflectional form} of a lemma (the ``base'' form of
-a word) given a set of grammatical features (such as \texttt{tense} or
-\texttt{person}).
+%\section{Task} moved to beginning of intro
+%As mentioned previously the task of morphological inflection is to
+%predict the \emph{inflectional form} of a lemma (the ``base'' form of
+%a word) given a set of grammatical features (such as \texttt{tense} or
+%\texttt{person}).
 %
 %- tag
 %- lemma
@@ -192,22 +197,26 @@ $100310$ (Turkish) presenting a unique challange to multilingual
 systems.
 
 For the low-resourced languages we produce \textbf{hallucinated data}
-to train on. We follow [REF], and produce an inflected form by
-replacing the parts of a inflected form which overlap with the lemma.
+to train on. We follow \cite{DBLP:conf/emnlp/AnastasopoulosN19}, and
+produce an inflected form by replacing the parts of a inflected form
+which overlap with the lemma.  A schematic of the hallucination
+process is shown in \cref{fig:hall}.
 
 \begin{figure}
 \centering
 \includegraphics[scale=0.5]{hall.pdf}
-\caption{A example of the data hallucination process.}
+\caption{\label{fig:hall} A example of the data hallucination process.}
 \end{figure}
 
-We make several additions, when replacing a sequence of characters we
-consider combinations of $[1,2,3,4]$-grams. We allow for the
-replacement sequence to vary in size, potentially adding or removing 2
-characters. Additionally, we don't consider subsequences which include
-a phonological symbol.  For each language with fewer than 10 000
-examples, we sample 10 000 new examples. A visualization of the number
-of examples in each language is shown in
+We make the following changes to
+\citep{DBLP:conf/emnlp/AnastasopoulosN19}, when replacing a sequence of
+characters we consider combinations of $[1,2,3,4]$-grams. We allow for
+the replacement sequence to vary in size, potentially adding or
+removing up to $2$ characters. Additionally, we don't consider
+subsequences which include a phonological symbol.  For each language
+with fewer than 10 000 examples, we sample 10 000 new examples. A
+visualization of the number of examples in each language is shown in
+\cref{fig:data}.
 
 \begin{figure}[ht]
 \begin{tikzpicture}
@@ -215,6 +224,7 @@ of examples in each language is shown in
         ybar stacked,
         ymin=0,
         ymax=105000,
+        scaled y ticks={false},
         xtick=data,
         legend style={
             cells={anchor=west},
@@ -224,12 +234,9 @@ of examples in each language is shown in
         height=150pt,
         /pgf/bar width=4pt,
         reverse legend=true,
-        %xtick={100, 1000, 10000, 100000},
         xticklabels from table={\testdata}{lang},
         xticklabel style={text width=1cm,align=center,font=\tiny,rotate=90},
         yticklabel style={text width=1cm,align=center,font=\tiny,rotate=90}
-        %x tick label style={rotate=180,anchor=east},
-        %xticklabel style = {font=\tiny,yshift=0.5ex}
     ]
         \addplot [fill=green!50]
             table [y=natural, meta=lang, x expr=\coordindex]
@@ -244,10 +251,11 @@ of examples in each language is shown in
 \caption{\label{fig:data} Number of natural and hallucinated examples in each language.}
 \end{figure}
 
-We improve upon [REF] in the following way.
-Noting that certain languages in the data use phonological symbols
-and separators, we hallucinate in such a way that we don't break apart
-morphemes.%\jp{An example will help.}
+
+%We improve upon [REF] in the following way.
+%Noting that certain languages in the data use phonological symbols
+%and separators, we hallucinate in such a way that we don't break apart
+%morphemes.
 
 
 \section{Method}
@@ -281,11 +289,11 @@ $add$ additive attention and $k$ the key:
 %  2. Use another naming than additive (I think it's multiplicative)}
 
 \begin{align*}
-	a^{add} & = \mathsf{softmax}(w^\top\mathsf{tanh}(W_ak + W_bh))\\
+	a^{add} & = \mathsf{softmax}(w^\top\mathsf{tanh}(\mathsf{W}_ak + \mathsf{W}_bh))\\
 	att^{add} & = \sum_{t=1}^{T}a_t^{add}h_t^{add}\\
 	a^{cos} & = \mathsf{softabs}(cos(k,h))\\
 	att^{cos} & = \sum_{t=1}^{T}a_t^{cos}h_t^{cos}\\
-	att & = W[att^{cos}; att^{add}]
+	att & = \mathsf{W}[att^{cos}; att^{add}]
 \end{align*}
 (in the above $h_t$ refers to the encoder's contextual representation for each character.)
 We employ additive attention for the tags. In each step we pass the
@@ -298,7 +306,7 @@ step, the lemma attention and the tag attention to the decoder.
 
 Instead of predicting the inflected form, one can also predict the
 levenshtein operations needed to transform the lemma into the
-inflected form [REF].
+inflected form isnpired by \cite{DBLP:conf/conll/MakarovRC17}.
 
 We find that making \emph{both} predictions, as a multitask setup,
 improves the performance of the system.
@@ -307,7 +315,8 @@ The multi-task setup operates on the character level, thus for each
 contextual representation of a character we want to predict an
 operation. Because \texttt{add} and \texttt{del} change the length, we
 predict two sets of operations, the \textbf{lemma-reductions} and the
-\textbf{lemma-additions}.
+\textbf{lemma-additions}. The levenshtein operations for the word pair
+(\emph{valatas}, \emph{ei valate}) is shown in \cref{fig:ops}.
 
 %We break down the task of applying levenshtein-distance operations
 %into two sub-tasks: \textbf{lemma-reductions}, where we predict the copy and
@@ -317,7 +326,8 @@ predict two sets of operations, the \textbf{lemma-reductions} and the
 \begin{figure}[ht]
 \centering
 \includegraphics[scale=0.5]{ops.pdf}
-\caption{Levenshtein operations mapped to characters in the lemma and inflection.}
+\caption{\label{fig:ops} Levenshtein operations mapped to characters in the lemma and
+inflection.}
 \end{figure}
 
 To predict the operations, we pass the lemma representations from the
@@ -352,7 +362,7 @@ time-step $t$, not the output from the decodet at $t-1$.
 It has been shown that models trained with this strategy may suffer
 at inference time. Indeed, they have never been exposed to a partially
 incorrect input in the training phase.  To address this issue we use
-scheduled sampling [REF].
+scheduled sampling \cite{DBLP:conf/nips/BengioVJS15}.
 
 We implement a simple schedule for calculating the probability of
 using the gold characters or the model's prediction by using a global
@@ -414,6 +424,7 @@ The hyperparameters used for training are presented in \cref{tab:hp} below.
 
 \section{Results}
 
+--- use a figure to fit
 \begin{table}[h]	
 \centering
 \begin{tabular}{lc}
@@ -433,21 +444,22 @@ We perform a leave-one-out ablation study to estimate the effect of
 our training strategies. The we use the same hyperparameters as
 reported in TABLE, but train for 15 epochs.
 
-
 %\jp{Not sure if ablation is the right word here.}
 
+--- wrong training parameters:
 \begin{table}[h]	
 \centering
 \begin{tabular}{lll}
-\textsc{Module} & \textsc{Accuracy} & \textsc{EM} \\
+\textsc{Module} & \textsc{EM Langs} & \textsc{EM} \\
   \hline
-  All  & $76.6$ & $95.5$ \\
-  w/o Multitask & $75.7 (-0.9)$ & $95.0$ \\
-  w/o Scheduled sampling & $75.3 (-1.3)$ & $95.1$ \\
-  w/o Label smoothing & $74.1 (-2.5)$ & $93.3$ \\
-  w/o Curriculum learning & $77.2 (+0.6)$ & $95.7$ \\
+  All  & $x$ & $x$ \\
+  w/o Multitask & $x$ & $x$ \\
+  w/o Scheduled sampling & $x$ & $x$ \\
+  w/o Label smoothing & $x$ & $x$ \\
+  w/o Curriculum learning & $x$ & $x$ \\
 \end{tabular} 
-\caption{Ablation study.}
+\caption{We compute the average exact match across languages and the
+exact match accuracy across all words.}
 \label{tab:abl}
 \end{table}
 
@@ -467,7 +479,7 @@ needing additional encoding parameters.
 
 %The acknowledgments should go immediately before the references. Do not number the acknowledgments section.
 %\textbf{Do not include this section when submitting your paper for review.}
-
+ 
 \bibliographystyle{acl_natbib}
 \bibliography{acl2021}
 
