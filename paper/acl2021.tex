@@ -282,20 +282,22 @@ causes attention to be too focused on a single character, and mostly
 ignored contextual cues relevant for the generation.
 
 To remedy this, we combine the cosine attention with additive
-attention as follows, where superscript $cos$ indicate cosine attention,
-$add$ additive attention and $k$ the key:
+attention as follows, where superscript $cos$ indicate cosine
+attention, $add$ additive attention, $h_t$ the hidden state from the
+encoder, $h_d$ the previous time-step from the decoder and $k$ the
+key:
 %\jp{
 %  1. Double-check the code.
 %  2. Use another naming than additive (I think it's multiplicative)}
 
 \begin{align*}
-	a^{add} & = \mathsf{softmax}(w^\top\mathsf{tanh}(\mathsf{W}_ak + \mathsf{W}_bh))\\
+	a^{add} & = \mathsf{softmax}(w^\top\mathsf{tanh}(\mathsf{W}_ak + \mathsf{W}_bh_d))\\
 	att^{add} & = \sum_{t=1}^{T}a_t^{add}h_t^{add}\\
 	a^{cos} & = \mathsf{softabs}(cos(k,h))\\
 	att^{cos} & = \sum_{t=1}^{T}a_t^{cos}h_t^{cos}\\
 	att & = \mathsf{W}[att^{cos}; att^{add}]
 \end{align*}
-(in the above $h_t$ refers to the encoder's contextual representation for each character.)
+%(in the above $h_t$ refers to the encoder's contextual representation for each character.)
 We employ additive attention for the tags. In each step we pass the
 concatenation of the character embedding obtained from the previous
 step, the lemma attention and the tag attention to the decoder.
@@ -450,16 +452,19 @@ reported in TABLE, but train for 15 epochs.
 \begin{table}[h]	
 \centering
 \begin{tabular}{lll}
-\textsc{Module} & \textsc{EM Langs} & \textsc{EM} \\
+\textsc{Module} & \textsc{avg. EM}\\
   \hline
-  All  & $x$ & $x$ \\
-  w/o Multitask & $x$ & $x$ \\
-  w/o Scheduled sampling & $x$ & $x$ \\
-  w/o Label smoothing & $x$ & $x$ \\
-  w/o Curriculum learning & $x$ & $x$ \\
+  All  & $76.4$ \\
+  w/o Curriculum learning & $75.5$\\
+  w/o Label smoothing & $72.7$\\
+  w/o Multitask & $74.6$ \\
+  w/o Scheduled sampling & $75.5$ \\
+  
+  
 \end{tabular} 
-\caption{We compute the average exact match across languages and the
-exact match accuracy across all words.}
+\caption{We evaluate the ablation experiment by calulating the exact
+match accuracy for each leanguage, then taking the mean over all
+lnaguages.}
 \label{tab:abl}
 \end{table}
 
