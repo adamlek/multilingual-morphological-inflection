@@ -82,7 +82,7 @@
         lud	128 10000
     }\testdata
 
-%\aclfinalcopy % Uncomment this line for the final submission
+\aclfinalcopy % Uncomment this line for the final submission
 %\def\aclpaperid{***} %  Enter the acl Paper ID here
 
 %\setlength\titlebox{5cm}
@@ -95,16 +95,11 @@
 
 \title{Training Strategies for Neural Multilingual Morphological Inflection}
 
-\author{First Author \\
-  Affiliation / Address line 1 \\
-  Affiliation / Address line 2 \\
-  Affiliation / Address line 3 \\
-  \texttt{email@domain} \\\And
-  Second Author \\
-  Affiliation / Address line 1 \\
-  Affiliation / Address line 2 \\
-  Affiliation / Address line 3 \\
-  \texttt{email@domain} \\}
+\author{Adam Ek and Jean-Philippe Bernardy \\
+	Centre for Linguistic Theory and Studies in Probability \\
+	Department of Philosophy, Linguistics and Theory of Science \\
+	University of Gothenburg \\
+	\texttt{\{adam.ek,jean-philippe.bernardy\}@gu.se} \\}
 
 \date{}
 
@@ -492,12 +487,10 @@ The hyperparameters used for training are presented in \cref{tab:hp} below.
 \subsection{Ablation Study}
 
 We perform a leave-one-out ablation study to estimate the effect of
-our training strategies. The we use the same hyperparameters as
-reported in TABLE, but train for 15 epochs.
+our proposed training strategies.
 
 %\jp{Not sure if ablation is the right word here.}
 
---- wrong training parameters:
 \begin{table}[h]	
 \centering
 \begin{tabular}{lr}
@@ -507,22 +500,47 @@ reported in TABLE, but train for 15 epochs.
   w/o Curriculum learning & $75.5$\\
   w/o Label smoothing & $72.7$\\
   w/o Multitask & $74.6$ \\
-  w/o Scheduled sampling & $75.5$ \\
-  
-  
+  w/o Scheduled sampling & $75.5$ \\  
 \end{tabular} 
 \caption{We evaluate the ablation experiment by calulating the exact
-match accuracy for each leanguage, then taking the mean over all
+match accuracy for each language, then taking the mean over all
 lnaguages.}
 \label{tab:abl}
 \end{table}
 
-\section{Discussion}
+The experiment show that curriculum learning and scheduled sampling
+both degrade the performance by $0.9$ percentage points. Removing the
+prediction of operation, i.e. \texttt{del}, \texttt{add} and so on
+degrade the performance more with a change of $-1.8$ percentage
+points. Lastly, removing the language-wise label smoothing resulted in
+a change of $-3.7$ percentage points. 
+
+Our implementation of curriculum learning is simplistic and does not
+include refinements such as model competence threshold and advanced
+scoring which may explain the lesser impact. 
+
+The scheduled learning module also doesn't add that much to our
+model. We hypothesise this is because the low-resource languages
+benefit from using the gold as input when predicting the next
+character, while high-resource languages does not need this as
+much. The model have seen more examples from high-resource languages
+and thus is able to model them better, which makes using the previous
+hidden state more reliable as input when predicting the next token.
+
+
+
+
+
+
+
 
 
 
 
 \section{Conclusions}
+
+We implemented four task and model-agnostic training strategies for
+multlingual morphoogical inflection. 
 
 
 %\section*{Acknowledgments}
