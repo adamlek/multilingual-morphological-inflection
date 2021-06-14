@@ -106,13 +106,14 @@
 \begin{document}
 \maketitle
 \begin{abstract}
-something something something something something something
-something something something something something something
-something something something something something something
-something something something something something something
-something something something something something something
-something something something something something something
-something something something 
+This paper presents the submission of team GUCLASP to SIGMORPHON
+2021 Shared Task on Generalization in Morphological Inflection
+Generation. 
+
+We develop a single multilingual model for all languages and explore
+several training strategies.
+
+....
 \end{abstract}
 
 \section{Introduction}
@@ -124,46 +125,77 @@ something something something
 
 Morphological inflection is the task of transforming a \emph{lemma} to
 its \emph{inflected form} given a set of \emph{grammatical features}
-(such as \texttt{tense} or \texttt{person}).  The worlds languages
-exhibit a large variety of morphological inflection strategies,
-including affixing, circumfixing and reduplication, among
-others.
-%\jp{citation(s) needed}.
-Typically, languages
-fall into a spectrum ranging from agglutinative to isolating. In
-agglutinative languages grammatical features are encoded with
-morphemes attached to a lemma, while in isolating languages each
-grammatical feature is repersented as a lemma.
+(such as \texttt{tense} or \texttt{person}).  Different languages have
+different strategies, or morphological processes such as affixation,
+circumfixation or reducplication among others
+\cite{haspelmath2013understanding}, to transform a lemma into an
+inflected form which express some grammatical features.  One way to
+characterise how languages express grammatical features is a spectrum
+ranging from agglutinative to isolating. In agglutinative languages
+grammatical features are encoded as bound morphemes attached to the
+lemma, while in isolating languages each grammatical feature is
+represented as a lemma. Thus, languages in different parts of this
+spectrum will have different strategies of expressing information
+given by grammatical features.
 
-Several systems for inflecting words have been implemented both using
-statistical \cite{DBLP:conf/eacl/SmitVGK14, kann2016med} and rule-based
-methods \cite{DBLP:phd/basesearch/Hulden09}. In rule-based methods rules for
-transformatins of strings are identified and applied accordingly. In
-this paper we focus on morphological inflection with neural networks,
-specifically, multilingual systems. In a multilingual system, a single
-model is developed to process multiple languages, such that we can
-give it either a word in, for example, Swedish or Evenk that will be
-inflected.
+
+
+%The worlds languages
+%exhibit a large variety of morphological inflection strategies,
+%including affixing, circumfixing and reduplication among others
+%\cite{haspelmath2013understanding}, that a system needs to address.
+%\jp{citation(s) needed}.
+
+%Additionally, languages fall into a spectrum ranging from agglutinative
+%to isolating. In agglutinative languages grammatical features are
+%encoded as bound morphemes attached to the lemma, while in isolating
+%languages each grammatical feature is represented as a lemma. Thus,
+%languages in different parts of this spectrum will have different
+%strategies of incorporating information given by grammatical features.
+
+In recent years, statistical and neural models have been performing
+very well on this task \cite{DBLP:conf/eacl/SmitVGK14,
+kann2016med}. We follow this tradition and implement a neural
+multilingual model for morphological inflection. In a multilingual
+system, a single model is developed to process multiple languages,
+such that we can give it either a word in, for example Swedish or
+Evenk, which will be inflected.
+
+
+%Several systems for inflecting words have been implemented both using
+%statistical \cite{DBLP:conf/eacl/SmitVGK14, kann2016med} and
+%rule-based methods \cite{DBLP:phd/basesearch/Hulden09}. In rule-based
+%methods rules for transformatoins of strings are identified and
+%applied accordingly. In this paper we focus on morphological
+%inflection with neural networks, specifically, a multilingual
+%system. In a multilingual system, a single model is developed to
+%process multiple languages, such that we can give it either a word in,
+%for example, Swedish or Evenk that will be inflected.  
 
 This is a challenging problem for several reasons. For many languages
-resources are scarce, a multilingual system must try the balance the
-training signals from both high-resource and low-resource languages
-such that the model learn something about both. Additionally, while
-there are similarities in how inflection is performed on the
-word-level different languages employ different strategies to inflect
-words. A model must the learn to recognize the different morphological
-processes and map them to individual languages.  In this paper, we
-investigate how far these two issues can be tackled using primarily
-different training strategies, as opposed to focusing on model design
-(parameters and the operations applied to them).  Of course, in the
-end the optimal system will be a combination of a good model design
-and a good training regime. 
+resources are scarce, and a multilingual system must try the balance
+the training signals from both high-resource and low-resource
+languages such that the model learn something about both.
+Additionally, different languages employ different morphological
+processes to inflect words. In addition to languages employing a
+variety of different morphological processes, different languages use
+different scripts (for example Arabic, Latin or Cyrillic), which can
+make it hard to transfer knowledge about one language to another.  To
+account for these factors a model must the learn to recognize the
+different morphological processes, their associated grammatical
+features, the script used and map them into individual languages.
 
-However, an advantage of finding good training strategies is that they
-do not (generally) require additional parameters in the model. This
-allows a model to obtain better representations with fewer parameters,
-thus increasing the quality of representations without needing
-additional encoding parameters.
+In this paper, we investigate how far these issues can be tackled
+using different training strategies, as opposed to focusing on model
+design. Of course, in the end the optimal system will be a
+combination of a good model design and good training strategies.
+% \adam: add something here
+
+%However, an advantage of finding good training strategies is that they
+%do not (generally) require additional parameters in the model. This
+%allows a model to obtain better representations with fewer parameters,
+%thus increasing the quality of representations without needing
+%too many additional encoding parameters.
 
 
 %In this paper we explore different training schemas for neural
@@ -174,7 +206,8 @@ additional encoding parameters.
 %LSTM sequence-to-sequence model with attention, augmented with
 %training procedures informed by human heuristics.
 
-We employ a LSTM encoder-decoder architecture with attention as our
+We employ a LSTM encoder-decoder architecture with attention, based on
+the architecture in \newcite{DBLP:conf/emnlp/AnastasopoulosN19}, as our
 base model and consider the following training strategies:
 
 \begin{itemize}
@@ -198,23 +231,26 @@ base model and consider the following training strategies:
 
 \section{Data}
 
-The data released cover $37$ languages of varying typology, genealogy,
-grammatical features and morphological processes. The data for the
-different languges vary greatly in size, from $138$ examples (Ludic)
-to $100310$ (Turkish).  For the low-resourced languages we produce
+The data released cover $38$ languages of varying typology, genealogy,
+grammatical features, scripts, and morphological processes. The data
+for the different languges vary greatly in size, from $138$ examples
+(Ludic) to $100310$ (Turkish).  For the low-resourced
+languages\footnote{We consider languages with less than 10 000
+training examples as low-resource in this paper.} we produce
 \textbf{hallucinated data} to train on. We follow
 \cite{DBLP:conf/emnlp/AnastasopoulosN19}, and produce a new inflected
 form by replacing the parts of an existing inflected form which
-overlap with the lemma. 
+overlap with the lemma.
 
 With respect to the work of \citet{DBLP:conf/emnlp/AnastasopoulosN19},
 we make the following changes. We identify all subsequences of length
 $3$ or more that overlap in the lemma and inflection. We then randomly
-sample one of them $R$ as the replacement sequence. 
-For each language we compile a set $\mathcal{C}$ containing all
+sample one of them, denoted $R$, as the sequence to be replaced.  For
+each language we compile a set $\mathcal{C_L}$ containing all
 (1,2,3,4)-grams in the language. We construct a string $G$ to replace
-$R$ with by sampling from $\mathcal{C}$ until we have a sequence whose
-length satisfy: $|R|-2 \leq |(g_0, ..., g_n)| \leq |R|+2$.
+$R$ with by uniformly sampling \textit{n}-grams from $\mathcal{C}$ and
+concatenating them $G = g_0, ..., g_m$ until we have a sequence whose
+length satisfy: $|R|-2 \leq |(g_0, ..., g_m)| \leq |R|+2$.
 
 %To generate a new
 %subsequence we randomly sample a set $G$ of 
@@ -226,7 +262,7 @@ length satisfy: $|R|-2 \leq |(g_0, ..., g_n)| \leq |R|+2$.
 Additionally, we don't consider subsequences which include a
 phonological symbol \footnote{Thus in \cref{fig:hall} a subsequence of
 length 2 is selected as replacement, since the larger subsequences
-includes the phonological symbol :}.  A schematic of the hallucination
+would include the phonological symbol :}.  A schematic of the hallucination
 process is shown in \cref{fig:hall}.
 
 
@@ -237,10 +273,9 @@ process is shown in \cref{fig:hall}.
 \end{figure}
 
 
-For each language with fewer
-than 10 000 examples, we sample 10 000 new examples. A visualization
-of the number of examples in each language is shown in
-\cref{fig:data}.
+For each language with fewer than 10 000 examples, we sample 10 000
+new examples. A visualization of the final number of examples in each
+language is shown in \cref{fig:data}.
 
 \begin{figure}[ht]
 \begin{tikzpicture}
@@ -255,7 +290,7 @@ of the number of examples in each language is shown in
             legend pos=north east,
         },
         width=\columnwidth*1.15,
-        height=150pt,
+        height=100pt,
         /pgf/bar width=4pt,
         reverse legend=true,
         xticklabels from table={\testdata}{lang},
@@ -290,13 +325,20 @@ across all languages.
 
 \subsection{Model}
 
+We can account for different languages in our single model in several
+ways, in this paper we use a language embedding as the first position
+in the lemma and inflection.
+
+% We use a language embedding as the first position in our input, thus
+% the input is $[lang_{id}, emb_{c_0},..., emb_{c_n}]$.
+
 We employ a encoder-decoder architecture with attention. The first
 layer in the model is comprised of an LSTM, which produces a
 contextual representation for each character in the lemma.
 
 We encode the tags using a self-attention module (equivalent to a
 1-head transformer layer).  This layer does not use any positional
-data: indeed the order of the tags does not matter.
+data: indeed the order of the tags does not matter (REF).
 
 We use an LSTM decoder with two attention modules. One attending to
 the lemma and one to the tags. For the lemma attention we use a
@@ -336,16 +378,22 @@ step, the lemma attention and the tag attention to the decoder.
 Instead of predicting the inflected form, one can also predict the
 levenshtein operations needed to transform the lemma into the
 inflected form; as inspired by \cite{DBLP:conf/conll/MakarovRC17}.
-We find that making \emph{both} predictions, as a multitask setup,
-improves the performance of the system.
+
+A benefit of considering operations instead of characters needed to
+transform a lemma to its inflected form is that the script used is a
+much lesser factor here. We find that making \emph{both} predictions,
+as a multitask setup, improves the performance of the system.
 
 The multi-task setup operates on the character level, thus for each
 contextual representation of a character we want to predict an
-operation. Because \texttt{add} and \texttt{del} change the length, we
-predict two sets of operations, the \textbf{lemma-reductions} and the
-\textbf{lemma-additions}. To illustrate, the levenshtein operations
-for the word pair (\emph{valatas}, \emph{ei valate}) in Veps (uralic
-language related to Finnish) is shown in \cref{fig:ops}.
+operation among \textit{deletion} (\texttt{del}),
+\textit{addition/insetion} (\texttt{add}), \textit{substitution}
+(\texttt{sub}) and \textit{copy} (\texttt{cp}). Because \texttt{add}
+and \texttt{del} change the length, we predict two sets of operations,
+the \textbf{lemma-reductions} and the \textbf{lemma-additions}. To
+illustrate, the levenshtein operations for the word pair
+(\emph{valatas}, \emph{ei valate}) in Veps (uralic language related to
+Finnish) is shown in \cref{fig:ops}.
 
 %We break down the task of applying levenshtein-distance operations
 %into two sub-tasks: \textbf{lemma-reductions}, where we predict the copy and
@@ -359,14 +407,15 @@ language related to Finnish) is shown in \cref{fig:ops}.
 inflection.}
 \end{figure}
 
-In our setup, the task of lemma-reductions in performed by predicting
+In our setup, the task of lemma-reductions is performed by predicting
 the \texttt{cp}, \texttt{del}, and \texttt{sub} operations based on
 the encoded hidden states in the lemma.  The task of lemma-additions
 then is performed by predicting the \texttt{cp}, \texttt{add}, and
 \texttt{sub} operations on the characters generated by the decoder.
-For both lemma-reductions and lemma-additions we use a classifier with
-shared parameters. \footnote{In the future, we'd like to experiment
-with including the representations of tags in the input to the classifier.}
+We use a single 2-layer perceptron with ReLU activation to predict
+both lemma-reduction and lemma-additions. \footnote{In the future,
+we'd like to experiment with including the representations of tags in
+the input to the operations classifier.}
 
 
 %\jp{I don't see how this solves the length problem?}
@@ -382,22 +431,109 @@ with including the representations of tags in the input to the classifier.}
 
 \subsection{Curriculum Learning}
 
-We employ a simple curriculum learning strategy where we 
-%We use the easy-first curriculum strategy\jp{[REF]} to 
-sort the data after each epoch based on the loss of each example. For
-all examples in the batch we sort them according to the loss obtained
-in the previous epoch, in ascending order such that the easy (low
-loss) occurs before the difficult examples (high loss).
+%We employ a simple curriculum learning strategy where we 
+%sort the data after each epoch based on the loss of each example. For
+%all examples in the batch we sort them according to the loss obtained
+%in the previous epoch, in ascending order such that the easy (low
+%loss) occurs before the difficult examples (high loss).
 
-For the first epoch, when we dont have any loss refer to for sorting,
-we sort the dataset according to the ratio of copy operations to other
-operations. We found that this strategy performed better than any of
-the other strategies which we tested: fewest addition-operations,
-least-grammatical-features, and random.  This strategy causes a small,
-but consistent improvement in the loss of the first epoch, which
-persists throughout the learning process.\jp{Curriculum learning in
-general or the specific thing for the 1st epoch? Adam: Currently
-reconsidering this approach in favor of something cooler}
+We employ a competence-based curriculum learning strategy based on the
+work of \cite{DBLP:conf/acl/LiuLWC20} and
+\cite{platanios2019competence}. A competence curriulum learning
+strategy construct a curriculum based on the \textit{competence} of a
+model, and present examples which the model is deemed to be able to
+handle. Thus, the model will gradually be presented with new more
+difficult examples. The goal of this strategy is for the model to
+transfer or apply the knowledge it aquired from the easy examples to
+the hard examples.
+ 
+To estimate an initial difficulty for an example we consider the
+unigram probability of the lemma and inflection. That is for a word
+(either the lemma or inflection) $c_0, ..., c_k$, the unigram log
+probability is given by:
+
+\begin{equation}
+    P_U(w) = \sum_{m=1}^{M} logp(c_i)
+\end{equation}
+
+To get a score for a lemma and inflection pair (henceforth $(x,y)$),
+we calculate it as the sum of the log probabilities of $x$ and $y$:
+
+\begin{equation}
+    score(x,y) = P_U(x) + P_U(y)
+\end{equation}
+
+We then sort the examples and use a cumulative density function to map
+the unigram probabilities to a score in the range $(0, 1]$, we denote
+the training set of pairs and their scores
+$((x,y), s)_0, \ldots, ((x,y), s)_m$, where $m$ indicate the number of
+examples in the datset, as $\mathcal{D}$.
+
+%We create a curriculum learning schedule by considering the
+%\textit{model competence}-based approach
+%\cite{platanios2019competence}.
+% 
+%A model competence approach to
+%curriculum learning defines a ``initial'' competence of a model which
+%determines which examples in the training set the model is competent
+%enough to train on at time-step $t$.
+%
+To select appropriate training examples from $\mathcal{D}$ we must
+estimate the competence $c$ of our model. The competence of the model
+is estimated by a function of the number of training steps $t$ taken:
+
+%We take the competence of the model to be
+%a fuction of the number of training steps $t$ taken
+
+%The competence $c$ of the model is gradually increased as a function
+%of the training steps $t$ taken [REF], thus:
+
+\begin{equation}
+    c(t) = \mathsf{min}(1, \sqrt{t\frac{1-c(1)^2}{c(1)^2}+c(1)^2})
+\end{equation}
+
+During training we employ a probabilistic approach to constructing
+batches from our corpus, we uniformly draw samples $((x, y), s)$ from
+the training set $\mathcal{D}$ such that the score $s$ is lower than
+the model competence $c(t)$. This ensures that for each training
+step, we only consider examples which the model can handle according
+to our curriculum schedule.
+
+However, just because an example has low unigram probability doesn't
+ensure that the example is easy, as the example may contain frequent
+characters but also include rare morphological processes (or rare
+combinations of levenshtein operations), to account for this we
+recompute the example scores for each training step. We sort the
+examples in each training step according to the \textbf{decoding
+loss}, then assign a new score to the batch examples in the range
+$(0, 1]$.
+
+We also have to take into account that as the model competence grows,
+``easy'' (low loss or high unigram probability) examples will be
+included more often in the batches. To ensure that the model learns
+more from examples whose difficulty is close to its competence we
+compute a weight $w$ for each example in the batch. We then scale the
+loss by dividing the score $s$ by the model competence at the current
+time-step:
+
+\begin{equation}
+\mathsf{weighted\ loss}(x, y) = \mathsf{loss}(x, y) \times \frac{score(x, y)}{c(t)}
+\end{equation}
+
+%Remember, we recompute the difficult of each example at every training
+%step, assigning it a new score in the range $(0, 1]$.
+
+
+
+%For the first epoch, when we dont have any loss refer to for sorting,
+%we sort the dataset according to the ratio of copy operations to other
+%operations. We found that this strategy performed better than any of
+%the other strategies which we tested: fewest addition-operations,
+%least-grammatical-features, and random.  This strategy causes a small,
+%but consistent improvement in the loss of the first epoch, which
+%persists throughout the learning process.\jp{Curriculum learning in
+%general or the specific thing for the 1st epoch? Adam: Currently
+%reconsidering this approach in favor of something cooler}
 
 \subsection{Scheduled Sampling}
 
@@ -443,11 +579,11 @@ Indeed, if there were, the model might completely exclude unseen
 characters from its prediction at test-time. (We found that
 \(\alpha=2.5\%\) is a good value.)
 
-\paragraph{Learning rate decay with a Curriculum} Recall that the training
-examples will be sorted by the difficulty in the previous epoch.  We
-note that employing a decaying learning rate has the effect that a
-model update its parameters \emph{more} on the easy examples and
-less on difficult examples. The idea is that the morphological
+\paragraph{Learning rate decay with a Curriculum} Recall that the
+training examples will be sorted by the difficulty in the previous
+epoch.  We note that employing a decaying learning rate has the effect
+that a model update its parameters \emph{more} on the easy examples
+and less on difficult examples. The idea is that the morphological
 processes involved in more difficult words can be discovered from the
 operations involved in the easier examples.
 
@@ -471,13 +607,55 @@ The hyperparameters used for training are presented in \cref{tab:hp} below.
 
 \section{Results}
 
---- use a figure to fit
-\begin{table}[h]	
+The results from our system are presented in \cref{tab:accuracy}. For
+each language in the training set we show the exact match accuracy and
+the levenshtein edit distance between the lemma and the inflected
+form.
+
+
+\begin{table}[ht!]	
 \centering
 \begin{tabular}{lc}
-\textsc{Language} & \textsc{Accuracy} \\
+\textsc{Lang} & \textsc{EM} \\
   \hline
-  
+  tur	& 100310  \\
+  olo	& 100062  \\
+  vep	& 100053  \\
+  sah	& 100046  \\
+  por	& 100041  \\
+  pol	& 100039  \\
+  ara	& 100027  \\
+  tyv	& 100015  \\
+  kmr	& 100003  \\
+  rus	& 100002  \\
+  spa	& 100001  \\
+  aym	& 100000  \\
+  deu	& 100000  \\
+  ces	& 94169  \\
+  krl	& 78673  \\
+  bul	& 39011  \\
+  nld	& 38827  \\
+  amh	& 32254  \\
+  heb	& 23204  \\
+  afb	& 22165  \\
+  arz	& 17683  \\
+  cni	& 13948  \\
+  ckb	& 11577  \\
+  ind	& 11072  \\
+  evn	& 5216  \\
+  see	& 3801  \\
+  ame	& 2524  \\
+  itl	& 1246  \\
+  syc	& 1217  \\
+  bra	& 1082  \\
+  ail	& 918  \\
+  mag	& 854  \\
+  vro	& 804  \\
+  kod	& 323  \\
+  sjo	& 290  \\
+  gup	& 214  \\
+  ckt	& 132  \\
+  lud	& 128  \\
 \end{tabular} 
 \caption{Acc}
 \label{tab:accuracy}
@@ -492,7 +670,7 @@ our proposed training strategies.
 
 %\jp{Not sure if ablation is the right word here.}
 
-\begin{table}[h]	
+\begin{table}[ht!]	
 \centering
 \begin{tabular}{lr}
 \textsc{Module} & \textsc{avg. EM}\\
@@ -516,9 +694,9 @@ degrade the performance more with a change of $-1.8$ percentage
 points. Lastly, removing the language-wise label smoothing resulted in
 a change of $-3.7$ percentage points. 
 
-Our implementation of curriculum learning is simplistic and does not
-include refinements such as model competence threshold and advanced
-scoring which may explain the lesser impact. 
+%Our implementation of curriculum learning is simplistic and does not
+%include refinements such as model competence threshold and advanced
+%scoring which may explain the lesser impact. 
 
 The scheduled learning module also doesn't add that much to our
 model. We hypothesise this is because the low-resource languages
@@ -528,26 +706,19 @@ much. The model have seen more examples from high-resource languages
 and thus is able to model them better, which makes using the previous
 hidden state more reliable as input when predicting the next token.
 
+\section{Conclusions and future Work}
+
+We presented 
 
 
+\section*{Acknowledgments}
 
+The research reported in this paper was supported by grant 2014-39
+from the Swedish Research Council, which funds the Centre for
+Linguistic Theory and Studies in Probability (CLASP) in the Department
+of Philosophy, Linguistics, and The- ory of Science at the University
+of Gothenburg.
 
-
-
-
-
-
-
-\section{Conclusions}
-
-We implemented four task and model-agnostic training strategies for
-multlingual morphoogical inflection. 
-
-
-%\section*{Acknowledgments}
-
-%The acknowledgments should go immediately before the references. Do not number the acknowledgments section.
-%\textbf{Do not include this section when submitting your paper for review.}
  
 \bibliographystyle{acl_natbib}
 \bibliography{acl2021}
