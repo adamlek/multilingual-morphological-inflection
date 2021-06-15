@@ -118,64 +118,29 @@ several training strategies.
 
 \section{Introduction}
 
-%Changes in strings typically nakes itself known through two processes,
-%morphological inflection and derivation. In morphological derivation a
-%words part of speech is changed, while in inflection the grammatical
-%functions of the word change.
-
 Morphological inflection is the task of transforming a \emph{lemma} to
 its \emph{inflected form} given a set of \emph{grammatical features}
 (such as \texttt{tense} or \texttt{person}).  Different languages have
 different strategies, or morphological processes such as affixation,
 circumfixation, or reduplication among others
 \cite{haspelmath2013understanding}.  These are all ways to make a
-lemma expresses some grammatical features.  One way to characterise
+lemma express some grammatical features.  One way to characterise
 how languages express grammatical features is a spectrum of
 morphological typology ranging from agglutinative to isolating. In
-agglutinative languages grammatical features are encoded as bound
+agglutinative languages, grammatical features are encoded as bound
 morphemes attached to the lemma, while in isolating languages each
 grammatical feature is represented as a lemma. Thus, languages in
 different parts of this spectrum will have different strategies for
 expressing information given by grammatical features.
 
-
-
-%The worlds languages
-%exhibit a large variety of morphological inflection strategies,
-%including affixing, circumfixing and reduplication among others
-%\cite{haspelmath2013understanding}, that a system needs to address.
-%\jp{citation(s) needed}.
-
-%Additionally, languages fall into a spectrum ranging from agglutinative
-%to isolating. In agglutinative languages grammatical features are
-%encoded as bound morphemes attached to the lemma, while in isolating
-%languages each grammatical feature is represented as a lemma. Thus,
-%languages in different parts of this spectrum will have different
-%strategies of incorporating information given by grammatical features.
-
 In recent years, statistical and neural models have been performing
-well on he task of marphological inflection
+well on the task of morphological inflection
 \cite{DBLP:conf/eacl/SmitVGK14, kann2016med,
 DBLP:conf/conll/MakarovRC17, sharma-etal-2018-iit}. We follow this
 tradition and implement a neural multilingual model for morphological
 inflection. In a multilingual system, a single model is developed to
 handle input from several different languages, such that we can give
 the model either a word in Evenk or Russian which it will inflect.
-
-%process multiple languages, such that we can give it either a word in
-%for example Swedish or Evenk, which will be inflected.
-
-
-
-%Several systems for inflecting words have been implemented both using
-%statistical \cite{DBLP:conf/eacl/SmitVGK14, kann2016med} and
-%rule-based methods \cite{DBLP:phd/basesearch/Hulden09}. In rule-based
-%methods rules for transformatoins of strings are identified and
-%applied accordingly. In this paper we focus on morphological
-%inflection with neural networks, specifically, a multilingual
-%system. In a multilingual system, a single model is developed to
-%process multiple languages, such that we can give it either a word in,
-%for example, Swedish or Evenk that will be inflected.  
 
 This is a challenging problem for several reasons. For many languages
 resources are scarce, and a multilingual system must try the balance
@@ -187,12 +152,12 @@ variety of different morphological processes, different languages use
 different scripts (for example Arabic, Latin, or Cyrillic), which can
 make it hard to transfer knowledge about one language to another.  To
 account for these factors a model must learn to recognize the
-different morphological processes, their associated grammatical
+different morphological processes, the associated grammatical
 features, the script used, and map them into individual languages.
 
 In this paper, we investigate how far these issues can be tackled
 using different training strategies, as opposed to focusing on model
-design. Of course, in the end an optimal system will be a
+design. Of course, in the end, an optimal system will be a
 combination of a good model design and good training strategies.
 % \adam: add something here
 
@@ -241,9 +206,9 @@ grammatical features, scripts, and morphological processes. The data
 for the different languages vary greatly in size, from $138$ examples
 (Ludic) to $100310$ (Turkish).  For the low-resourced
 languages\footnote{We consider languages with less than 10 000
-training examples as low-resource in this paper.} we produce
-\textbf{hallucinated data} \cite{DBLP:conf/emnlp/AnastasopoulosN19} to
-train on.
+training examples as low-resource in this paper.} we extend the
+original dataset with \textbf{hallucinated data}
+\cite{DBLP:conf/emnlp/AnastasopoulosN19} to train on.
 
 With respect to the work of \citet{DBLP:conf/emnlp/AnastasopoulosN19},
 we make the following changes. We identify all subsequences of length
@@ -251,9 +216,9 @@ $3$ or more that overlap in the lemma and inflection. We then randomly
 sample one of them, denoted $R$, as the sequence to be replaced.  For
 each language, we compile a set $\mathcal{C_L}$ containing all
 (1,2,3,4)-grams in the language. We construct a string $G$ to replace
-$R$ with by uniformly sampling \textit{n}-grams from $\mathcal{C_L}$ and
-concatenating them $G = \mathsf{cat}(g_0, ..., g_m)$ until we have a sequence whose
-length satisfy: $|R|-2 \leq |G| \leq |R|+2$.
+$R$ with by uniformly sampling \textit{n}-grams from $\mathcal{C_L}$
+and concatenating them $G = \mathsf{cat}(g_0, ..., g_m)$ until we have
+a sequence whose length satisfy: $|R|-2 \leq |G| \leq |R|+2$.
 
 %To generate a new
 %subsequence we randomly sample a set $G$ of 
@@ -276,7 +241,7 @@ process is shown in \cref{fig:hall}.
 \end{figure}
 
 
-Sampling $n$-grams instead of single character allows us to retain
+Sampling $n$-grams instead of individual characters allow us to retain
 some of the orthography and phonological information present in the
 language.  We generate a set of 10 000 hallucinated examples for each
 of the low-resource languages.
@@ -332,15 +297,15 @@ are presented. We employ a single model with shared parameters
 across all languages. 
 
 \subsection{Model}
-
 To account for different languages in our model we prepend a language
-embedding to the input.
-To model inflection we employ an encoder-decoder architecture with
-attention. The first layer in the model is comprised of an LSTM, which
-produces a contextual representation for each character in the lemma.
-We encode the tags using a self-attention module (equivalent to a
-1-head transformer layer).  This layer does not use any positional
-data: indeed the order of the tags does not matter
+embedding to the input (similar to \cite{johnson2017google,
+raffel2019exploring}).  To model inflection, we employ an
+encoder-decoder architecture with attention. The first layer in the
+model is comprised of an LSTM, which produces a contextual
+representation for each character in the lemma.  We encode the tags
+using a self-attention module (equivalent to a 1-head transformer
+layer) \cite{DBLP:conf/nips/VaswaniSPUJGKP17}.  This layer does not
+use any positional data: indeed the order of the tags does not matter
 \cite{DBLP:conf/emnlp/AnastasopoulosN19}.
 
 To generate inflections, we use an LSTM decoder with two attention
@@ -376,10 +341,10 @@ attention we also employ regularization to the attention modules such
 that for each decoding step, the attention is encouraged to distribute
 the attention weights $a$ uniformly across the lemma and tag hidden
 states \cite{DBLP:conf/emnlp/AnastasopoulosN19,
-DBLP:conf/naacl/CohnHVYDH16}. We employ additive attention for the tags
+DBLP:conf/naacl/CohnHVYDH16}. We employ additive attention for the tags.
 
 %(in the above $h_t$ refers to the encoder's contextual representation for each character.)
-In each decode-step we pass the gold or predicted character embedding
+In each decoding step, we pass the gold or predicted character embedding
 to the decoding LSTM. We then take the output as the key and calculate
 attention over the lemma and tags. This representation is then passed
 to a two-layer perceptron:
@@ -550,19 +515,22 @@ time-step:
 
 Because the value of our model competence is tied to a specific number
 of training steps, we develop a probabilistic strategy for sampling
-batches when the model have reached full competence. 
-When the model reaces full competence we construct language weights
+batches when the model has reached full competence. 
+When the model reaches full competence we construct language weights
 $L$, by dividing the number of examples in a language by the total
 number of examples in the dataset and taking the inverse distribution
 as the language weights.
 
-Thus for each language we get a value in the range $(0,1]$ where
+Thus for each language, we get a value in the range $(0,1]$ where
 low-resource languages receive a higher weight.  To construct a batch
 we continue by sampling examples, but now we only add an example if
 $r \sim \rho$, where $\rho$ is a uniform Bernoulli distribution, is
-less than the language weight of the example.  This strategy allow us
+less than the language weight of the example.  This strategy allows us
 to continue training our model after reaching full competence without
 neglecting the low-resource languages.
+
+In total we train the model for $240 000$ training steps, and consider
+the model to be fully competent after $60 000$ training steps.
 
 
 %Remember, we recompute the difficult of each example at every training
@@ -583,7 +551,7 @@ neglecting the low-resource languages.
 \subsection{Scheduled Sampling}
 
 Commonly, when training an encoder-decoder RNN model, the input at
-time-step $t$, is not the output from the decoder at $t-1$, but rather
+time-step $t$ is not the output from the decoder at $t-1$, but rather
 the gold data.  It has been shown that models trained with this
 strategy may suffer at inference time. Indeed, they have never been
 exposed to a partially incorrect input in the training phase.  To
@@ -592,7 +560,7 @@ address this issue we use scheduled sampling
 
 We implement a simple schedule for calculating the probability of
 using the gold characters or the model's prediction by using a global
-sample probability variable which is updated at each training-step. We
+sample probability variable which is updated at each training step. We
 start with a probability \(\rho\) of 100\% to take the gold. At each
 epoch, we decrease \(\rho\) by $\frac{1}{\mathsf{total steps}}$. For each
 character, we take a sample from the Bernoulli distribution of
@@ -608,8 +576,10 @@ We use cross-entropy loss for the character generation loss and
 %  footnote.} 
 %and cross-entropy loss 
 for the operation predictions tasks. Our final loss function consists
-of the character generation loss, the lemma-reduction and the
-lemma-addition losses summed.
+of the character generation loss, the lemma-reduction, and the
+lemma-addition losses summed. We use a cosine annealling learning rate
+scheduler \cite{DBLP:conf/iclr/LoshchilovH17}, gradually decreasing
+the learning rate.
 
 \begin{table}[ht!]	
 \centering
@@ -625,7 +595,10 @@ lemma-addition losses summed.
   Min LR & 0.0000001 \\
   Smoothing-$\alpha$ & 2.5\% \\
 \end{tabular} 
-\caption{Hyperparameters used. As we use a probabilistic approach to training we report number of training steps rather than epochs. In total, the number of training steps we take correspond to about 35 epochs.}
+\caption{Hyperparameters used. As we use a probabilistic approach to
+training we report number of training steps rather than epochs. In
+total, the number of training steps we take correspond to about 35
+epochs.}
 \label{tab:hp}
 \end{table}
 
@@ -634,14 +607,19 @@ lemma-addition losses summed.
 smoothing to calculate the loss. This means that we remove $\alpha$
 from the probability of the correct character and distribute the same
 $\alpha$ uniformly across the probabilities of the characters
-belonging to the language of the word. A difficulty is that each
-language potentially uses a different set of characters. We calculate
-this set using the training set only--- so it is important to make
-$\alpha$ not too large, so that there is not a too big difference
-between characters seen in the training set and those not seen.
-Indeed, if there were, the model might completely exclude unseen
-characters from its prediction at test-time. (We found that
-\(\alpha=2.5\%\) is a good value.)
+belonging to the language of the word. The motivation for doing label
+smoothing this way is that we know that all incorrect character
+predictions are not \emph{equally} incorrect. For example, when
+predicting the inflected form of a Modern Standard Arabic (ara) word,
+it is more correct to select \emph{any} character from the arabic
+alphabetbet than a character from the latin or cyrillic alphabet.  A
+difficulty is that each language potentially uses a different set of
+characters. We calculate this set using the training set only--- so it
+is important to make $\alpha$ not too large, so that there is not a
+too big difference between characters seen in the training set and
+those not seen.  Indeed, if there were, the model might completely
+exclude unseen characters from its prediction at test-time. (We found
+that \(\alpha=2.5\%\) is a good value.)
 
 %\paragraph{Learning rate decay with a Curriculum} Recall that the
 %training examples will be sorted by the difficulty in the previous
@@ -661,8 +639,8 @@ The hyperparameters used for training are presented in \cref{tab:hp} above.
 
 The results from our system are presented in
 \cref{tab:accuracy-dev}. Each language is evaluated by two metrics,
-exact match and average levenshtein distance. The average levenshtein
-distance is on average, how many operations is required to transform
+exact match, and average Levenshtein distance. The average Levenshtein
+distance is on average, how many operations are required to transform
 the system's guess to the gold inflected form (that is, $0$ is the
 best score).
 
@@ -826,17 +804,17 @@ shown by the red line.}
 
 We note that for all languages with roughly more than 30 000 examples
 our model performs quite well, achieving around $98\%$ accuracy. When
-we consider languages that have around to 10 000 natural examples and
+we consider languages that have around 10 000 natural examples and
 no hallucinated data the accuracy drops closer to round $50\%$. For
-the languages with hallucinated data we would expect this trend to
+the languages with hallucinated data, we would expect this trend to
 continue as the data is synthetic and does not take into account
 orthographic or phonological information as natural language examples
 do.  That is, when constructing hallucinated examples, orthography and
-phonology is taken into account only indirectly because we consider
-$n$-grams instead of charaters when finding the replacement
+phonology are taken into account only indirectly because we consider
+$n$-grams instead of characters when finding the replacement
 sequence. However, we find that for many of the languages with
 hallucinated data the exact match accuracy is above $50\%$, but varies
-a lot depending on language.
+a lot depending on the language.
 
 Two of the worst languages in our model is Classical Syriac (syc) and
 Xibe (sjo).  An issue with Classical Syriac is that the language uses
@@ -844,8 +822,8 @@ a unique script, Syriac Abjad, which would make it difficult for the
 model to transfer information about operations and common character
 combinations/transformations into Classical Syriac from related
 languages such as Modern Standard Arabic (which is spoken in the
-region). For Xibe there is a similar story, it use the Sibe alphabet
-which is a variant of manchu script, which does not occur elsewhere in
+region). For Xibe there is a similar story, it uses the Sibe alphabet
+which is a variant of Manchu script, which does not occur elsewhere in
 our dataset.
 
 
@@ -853,14 +831,13 @@ our dataset.
 
 \section{Language similarities}
 
-For a model that processes many different languages it must have the
+For a model that processes many different languages, it must have the
 ability to recognize different languages.  In addition to recognizing
-languages (which are included in the input) it would be encouraging if
-the model also was able to find similarities between languages.  To
-explore this we investigate whether the language embeddings learnt by
-the model produce clusters of language families. A t-SNE
-\cref{van2008visualizing} plot of the language embeddings is shown in
-\cref{fig:lang_tsne}.
+languages (which are included in the input), it would be encouraging
+if the model also was able to find similarities between languages.  To
+explore this we investigate whether the language embeddings learned by
+the model produce clusters of language families. A t-SNE plot of the
+language embeddings is shown in \cref{fig:lang_tsne}.
 
 \begin{figure}[ht]
 \centering
@@ -869,9 +846,9 @@ the model produce clusters of language families. A t-SNE
 embeddings. Different colors indicate different language families.}
 \end{figure}
 
-The plot shown that the model is able to find some family resemblence
-between languages. For example we have a Uralic cluster consisting of
-the languages Veps (vep), Olonets (olo) and Karelian (krl) which are
+The plot shows that the model can find some family resemblances
+between languages. For example, we have a Uralic cluster consisting of
+the languages Veps (vep), Olonets (olo), and Karelian (krl) which are
 all spoken in a region around Russia and Finland. However, Ludic (lud)
 and V\~{o}ro (vro) are not captured in this cluster, yet they are
 spoken in the same region.
@@ -879,14 +856,14 @@ spoken in the same region.
 Another interesting collection of language embeddings occur in the top
 right of the plot, where we find Bulgarian, Russian, Polish and
 Aymaran. There is some commonality between Russian, Bulgarian and
-Polish in that they're fusional slavic languages, but Aymaran is an
+Polish in that they're fusional Slavic languages, but Aymaran is an
 agglutinative indigenous South American language. Rather we'd expect
 Czech to appear here, but in the figure it's located further to the
 south. 
 
 In general, our model's language embeddings appear to learn some
 relationships between languages, but certainly not all of
-them. However, that we find some common patters in encouraging for
+them. However, that we find some common patterns in encouraging for
 future work.
 
 %\subsection{Scheduled Sampling}
@@ -906,14 +883,16 @@ inflection in $38$ languages enhanced with different training
 strategies: curriculum learning, multi-task learning, scheduled
 sampling and language-wise label smoothing.  
 The results indicate that our model to some extent capture
-similarities between the input languages, and are able to produce
+similarities between the input languages, and can produce
 inflections with an average exact match accuracy of about $80\%$. 
 
-In future work we plan on exploring curriculum learning in more detail
+In future work, we plan on exploring curriculum learning in more detail
 and move away from estimating the competence of our model linearly,
-and instead estimate the competence based on accuracy in the
+and instead, estimate the competence using the accuracy on the
 batches. Another interesting line of work here is instead of scoring
-the examples by model loss alone, combine it with insights from language aquisition and teaching \cite{ionin2002easier, slabakova2010easy}.
+the examples by model loss alone, combine it with insights from
+language acquisition and teaching \cite{ionin2002easier,
+slabakova2010easy}.
 
 We also plan to investigate language-wise label smoothing more
 closely, specifically how the value of $\alpha$ should be fine-tuned
