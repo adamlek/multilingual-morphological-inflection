@@ -41,45 +41,45 @@
         compat/bar nodes=1.8,
     }
     \pgfplotstableread{
-        lang natural hallucinated
-        tur	100310 0
-        olo	100062 0
-        vep	100053 0
-        sah	100046 0
-        por	100041 0
-        pol	100039 0
-        ara	100027 0
-        tyv	100015 0
-        kmr	100003 0
-        rus	100002 0
-        spa	100001 0
-        aym	100000 0
-        deu	100000 0
-        ces	94169 0
-        krl	78673 0
-        bul	39011 0
-        nld	38827 0
-        amh	32254 0
-        heb	23204 0
-        afb	22165 0
-        arz	17683 0
-        cni	13948 0
-        ckb	11577 0
-        ind	11072 0
-        evn	5216 10000
-        see	3801 10000
-        ame	2524 10000
-        itl	1246 10000
-        syc	1217 10000
-        bra	1082 10000
-        ail	918 10000
-        mag	854 10000
-        vro	804 10000
-        kod	323 10000
-        sjo	290 10000
-        gup	214 10000
-        ckt	132 10000
-        lud	128 10000
+        lang natural hallucinated acc
+        tur	100310 0 98.85
+        olo	100062 0 99.35
+        vep	100053 0 99.33
+        sah	100046 0 99.87
+        por	100041 0 98.37
+        pol	100039 0 97.47
+        ara	100027 0 98.58
+        tyv	100015 0 98.49
+        kmr	100003 0 98.31
+        rus	100002 0 96.86
+        spa	100001 0 98.66
+        aym	100000 0 99.80
+        deu	100000 0 93.25
+        ces	94169 0 93.96
+        krl	78673 0 97.87
+        bul	39011 0 98.04
+        nld	38827 0 92.33
+        amh	32254 0 97.11
+        heb	23204 0 95.0
+        afb	22165 0 91.16
+        arz	17683 0 92.52
+        cni	13948 0 91.43
+        ckb	11577 0 71.72
+        ind	11072 0 61.94
+        evn	5216 10000 52.17
+        see	3801 10000 52.42
+        ame	2524 10000 74.17
+        itl	1246 10000 31.31
+        syc	1217 10000 15.7
+        bra	1082 10000 62.09
+        ail	918 10000 91.98
+        mag	854 10000 63.64
+        vro	804 10000 78.07
+        kod	323 10000 80.43
+        sjo	290 10000 36.59
+        gup	214 10000 26.67
+        ckt	132 10000 55.56
+        lud	128 10000 66.67
     }\testdata
 
 \aclfinalcopy % Uncomment this line for the final submission
@@ -131,12 +131,12 @@ circumfixation, or reduplication among others
 \cite{haspelmath2013understanding}, to transform a lemma into an
 inflected form that expresses some grammatical features.  One way to
 characterise how languages express grammatical features is a spectrum
-ranging from agglutinative to isolating. In agglutinative languages
-grammatical features are encoded as bound morphemes attached to the
-lemma, while in isolating languages each grammatical feature is
-represented as a lemma. Thus, languages in different parts of this
-spectrum will have different strategies for expressing information
-given by grammatical features.
+of morphological typology ranging from agglutinative to isolating. In
+agglutinative languages grammatical features are encoded as bound
+morphemes attached to the lemma, while in isolating languages each
+grammatical feature is represented as a lemma. Thus, languages in
+different parts of this spectrum will have different strategies for
+expressing information given by grammatical features.
 
 
 
@@ -291,7 +291,7 @@ language is shown in \cref{fig:data}.
             legend pos=north east,
         },
         width=\columnwidth*1.15,
-        height=100pt,
+        height=150pt,
         /pgf/bar width=4pt,
         reverse legend=true,
         xticklabels from table={\testdata}{lang},
@@ -388,7 +388,7 @@ as a multi-task setup, improves the performance of the system.
 The multi-task setup operates on the character level, thus for each
 contextual representation of a character we want to predict an
 operation among \textit{deletion} (\texttt{del}),
-\textit{addition/insetion} (\texttt{add}), \textit{substitution}
+\textit{addition/insertion} (\texttt{add}), \textit{substitution}
 (\texttt{sub}) and \textit{copy} (\texttt{cp}). Because \texttt{add}
 and \texttt{del} change the length, we predict two sets of operations,
 the \textbf{lemma-reductions} and the \textbf{lemma-additions}. To
@@ -580,13 +580,13 @@ Indeed, if there were, the model might completely exclude unseen
 characters from its prediction at test-time. (We found that
 \(\alpha=2.5\%\) is a good value.)
 
-\paragraph{Learning rate decay with a Curriculum} Recall that the
-training examples will be sorted by the difficulty in the previous
-epoch.  We note that employing a decaying learning rate has the effect
-that a model updates its parameters \emph{more} on the easy examples
-and less on the difficult examples. The idea is that the morphological
-processes involved in more difficult words can be discovered from the
-operations involved in the easier examples.
+%\paragraph{Learning rate decay with a Curriculum} Recall that the
+%training examples will be sorted by the difficulty in the previous
+%epoch.  We note that employing a decaying learning rate has the effect
+%that a model updates its parameters \emph{more} on the easy examples
+%and less on the difficult examples. The idea is that the morphological
+%processes involved in more difficult words can be discovered from the
+%operations involved in the easier examples.
 
 The hyperparameters used for training are presented in \cref{tab:hp} below.
 \begin{table}[h]	
@@ -597,118 +597,216 @@ The hyperparameters used for training are presented in \cref{tab:hp} below.
   Batch Size & 256 \\
   Embedding dim & 128 \\
   Hidden dim & 256 \\
-  Epochs & 30 \\
+  Training steps & 240000 \\
+  Steps for full competence & 60000 \\
   Initial LR & 0.001 \\
   Min LR & 0.0000001 \\
   Smoothing-$\alpha$ & 2.5\% \\
 \end{tabular} 
-\caption{Hyperparameters.}
+\caption{Hyperparameters used. As we use a probabilistic approach to training we report number of training steps rather than epochs. In total, the number of training steps we take correspond to about 35 epochs.}
 \label{tab:hp}
 \end{table}
 
 \section{Results}
 
-The results from our system are presented in \cref{tab:accuracy}. For
-each language in the training set we show the exact match accuracy and
-the levenshtein edit distance between the lemma and the inflected
+During test-time we use beam-decoding to produce a final inflected
 form.
 
+The results from our system are presented in
+\cref{tab:accuracy-dev}. Each language is exavluated by two metrics,
+exact match and average levenshtein distance. The average levenshtein
+distance is on average, how many operations is required to transform
+the system's guess to the gold inflected form.
 
 \begin{table}[ht!]	
 \centering
-\begin{tabular}{lc}
-\textsc{Lang} & \textsc{EM} \\
+\begin{tabular}{lrr}
+\textsc{Lang} & \textsc{EM} & \textsc{Lev dist}  \\
   \hline
-  tur	& 100310  \\
-  olo	& 100062  \\
-  vep	& 100053  \\
-  sah	& 100046  \\
-  por	& 100041  \\
-  pol	& 100039  \\
-  ara	& 100027  \\
-  tyv	& 100015  \\
-  kmr	& 100003  \\
-  rus	& 100002  \\
-  spa	& 100001  \\
-  aym	& 100000  \\
-  deu	& 100000  \\
-  ces	& 94169  \\
-  krl	& 78673  \\
-  bul	& 39011  \\
-  nld	& 38827  \\
-  amh	& 32254  \\
-  heb	& 23204  \\
-  afb	& 22165  \\
-  arz	& 17683  \\
-  cni	& 13948  \\
-  ckb	& 11577  \\
-  ind	& 11072  \\
-  evn	& 5216  \\
-  see	& 3801  \\
-  ame	& 2524  \\
-  itl	& 1246  \\
-  syc	& 1217  \\
-  bra	& 1082  \\
-  ail	& 918  \\
-  mag	& 854  \\
-  vro	& 804  \\
-  kod	& 323  \\
-  sjo	& 290  \\
-  gup	& 214  \\
-  ckt	& 132  \\
-  lud	& 128  \\
+  afb & 91.16\% & 0.15 \\
+  ail & 91.98\% & 0.22 \\
+  ame & 74.17\% & 0.51 \\
+  amh & 97.11\% & 0.04 \\
+  ara & 98.58\% & 0.03 \\
+  arz & 92.52\% & 0.13 \\
+  aym & 99.8\% & 0.0 \\
+  bra & 62.09\% & 0.62 \\
+  bul & 98.04\% & 0.03 \\
+  ces & 93.96\% & 0.11 \\
+  ckb & 71.72\% & 0.52 \\
+  ckt & 55.56\% & 1.28 \\
+  cni & 91.43\% & 0.12 \\
+  deu & 93.25\% & 0.1 \\
+  evn & 52.17\% & 1.29 \\
+  gup & 26.67\% & 3.53 \\
+  heb & 95.0\% & 0.1 \\
+  ind & 61.94\% & 1.22 \\
+  itl & 31.31\% & 1.94 \\
+  kmr & 98.31\% & 0.02 \\
+  kod & 80.43\% & 0.37 \\
+  krl & 97.87\% & 0.03 \\
+  lud & 66.67\% & 0.44 \\
+  mag & 63.64\% & 0.72 \\
+  nld & 92.33\% & 0.12 \\
+  olo & 99.35\% & 0.01 \\
+  pol & 97.47\% & 0.04 \\
+  por & 98.37\% & 0.03 \\
+  rus & 96.86\% & 0.05 \\
+  sah & 99.87\% & 0.0 \\
+  see & 52.42\% & 1.06 \\
+  sjo & 36.59\% & 1.68 \\
+  spa & 98.66\% & 0.02 \\
+  syc & 15.7\% & 4.79 \\
+  tur & 98.85\% & 0.02 \\
+  tyv & 98.49\% & 0.02 \\
+  vep & 99.33\% & 0.01 \\
+  vro & 78.07\% & 0.39 \\
 \end{tabular} 
-\caption{Acc}
-\label{tab:accuracy}
+\caption{Results on the development data.}
+\label{tab:accuracy-dev}
 \end{table}
 
 
 
-\subsection{Ablation Study}
+%\subsection{Ablation Study}
 
-We perform a leave-one-out ablation study to estimate the effect of
-our proposed training strategies.
+%We perform a leave-one-out ablation study to estimate the effect of
+%our proposed training strategies.
 
 %\jp{Not sure if ablation is the right word here.}
 
-\begin{table}[ht!]	
-\centering
-\begin{tabular}{lr}
-\textsc{Module} & \textsc{avg. EM}\\
-  \hline
-  All  & $76.4$ \\
-  w/o Curriculum learning & $75.5$\\
-  w/o Label smoothing & $72.7$\\
-  w/o Multitask & $74.6$ \\
-  w/o Scheduled sampling & $75.5$ \\  
-\end{tabular} 
-\caption{We evaluate the ablation experiment by calculating the exact
-match accuracy for each language, then taking the mean over all
-languages.}
-\label{tab:abl}
-\end{table}
+%\begin{table}[ht!]	
+%\centering
+%\begin{tabular}{lr}
+%\textsc{Module} & \textsc{avg. EM}\\
+%  \hline
+%  All  & $76.4$ \\
+%  w/o Curriculum learning & $75.5$\\
+%  w/o Label smoothing & $72.7$\\
+%  w/o Multitask & $74.6$ \\
+%  w/o Scheduled sampling & $75.5$ \\  
+%\end{tabular} 
+%\caption{We evaluate the ablation experiment by calculating the exact
+%match accuracy for each language, then taking the mean over all
+%languages.}
+%\label{tab:abl}
+%\end{table}
 
-The experiment shows that curriculum learning and scheduled sampling
-both degrade the performance by $0.9$ percentage points. Removing the
-prediction of operations, i.e. \texttt{del}, \texttt{add} and so on
-degrade the performance more with a change of $-1.8$ percentage
-points. Lastly, removing the language-wise label smoothing resulted in
-a change of $-3.7$ percentage points. 
+%The experiment shows that curriculum learning and scheduled sampling
+%both degrade the performance by $0.9$ percentage points. Removing the
+%prediction of operations, i.e. \texttt{del}, \texttt{add} and so on
+%degrade the performance more with a change of $-1.8$ percentage
+%points. Lastly, removing the language-wise label smoothing resulted in
+%a change of $-3.7$ percentage points. 
 
 %Our implementation of curriculum learning is simplistic and does not
 %include refinements such as model competence threshold and advanced
 %scoring which may explain the lesser impact. 
 
-The scheduled learning module also doesn't add that much to our
-model. We hypothesise this is because the low-resource languages
-benefit from using the gold as input when predicting the next
-character, while high-resource languages do not need this as
-much. The model has seen more examples from high-resource languages
-and thus can model them better, which makes using the previous
-hidden state more reliable as input when predicting the next token.
+%The scheduled learning module also doesn't add that much to our
+%model. We hypothesise this is because the low-resource languages
+%benefit from using the gold as input when predicting the next
+%character, while high-resource languages do not need this as
+%much. The model has seen more examples from high-resource languages
+%and thus can model them better, which makes using the previous
+%hidden state more reliable as input when predicting the next token.
 
-- analysis: language embeddings TSNE
-- analysis: character embeddings TSNE
+\begin{figure}[ht]
+\begin{tikzpicture}
+    \begin{axis}[
+        ybar stacked,
+        ymin=0,
+        ymax=105000,
+        ytick style={draw=none},
+        scaled y ticks={false},
+        xtick=data,
+        legend style={
+            cells={anchor=west},
+            legend pos=north east,
+        },
+        width=\columnwidth*1.15,
+        height=180pt,
+        /pgf/bar width=4pt,
+        reverse legend=true,
+        xticklabels from table={\testdata}{lang},
+        xticklabel style={text width=1cm,align=center,font=\tiny,rotate=90},
+        yticklabel style={text width=1cm,align=center,font=\tiny,rotate=90}
+    ]
+        \addplot [fill=green!50]
+            table [y=natural, meta=lang, x expr=\coordindex]
+                {\testdata};
+                    %\addlegendentry{natural}
+        \addplot [fill=blue!50]
+            table [y=hallucinated, meta=lang, x expr=\coordindex]
+                {\testdata};
+                    %\addlegendentry{hallucinated}
+    \end{axis}
+    \begin{axis}[      
+      %scale only axis,
+      scaled y ticks={false},
+      ymin=0,
+      ymax=120.0,
+      xtick=data,
+      xtick style={draw=none},
+      every axis plot/.append style={thick},
+      %ytick style={draw=none},
+      axis y line*=right,
+      %axis x line*=top
+      width=\columnwidth*1.15,
+      height=180pt,
+      %xticklabels from table={\testdata}{lang},
+      xticklabels={},
+      xticklabel style={text width=1cm,align=center,font=\tiny,rotate=90},
+      yticklabel style={text width=1cm,align=center,font=\tiny,rotate=90}
+      ]
+      \addplot [red]
+          table [y=acc, meta=lang, x expr=\coordindex] {\testdata};
+                    %\addlegendentry{acc}
+    \end{axis}
+
+\end{tikzpicture}
+\caption{\label{fig:data_acc} Number of examples (left $x$-axis)
+plotted against the exact match accuracy (right $x$-axis) of our
+system on the development data..}
+\end{figure}
+
+
+\section{Discussion}
+
+\subsection{...}
+
+For a model that processes many different languages it must have the
+ability to recognize different languages, which our models appears to
+be able to. We can follow up this with the question whether the model
+can find simiarities between different languages. To explore this we
+investigate whether the language embeddings learnt by the model
+produce clusters of language families. A t-SNE [REF] plot of the
+language embeddings is shown in \cref{fig:lang_tsne}.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[scale=0.5]{lang_tsne.pdf}
+\caption{\label{fig:lang_tsne} t-SNE plot of the language
+embeddings. Different colors indicate different language families.}
+\end{figure}
+
+The plot shown that the model is able to find some family resemblence
+between languages. For example we have a Uralic cluster consisting of
+the languages Veps, Olonets and Karelian which are all spoken in a
+region around Russia and Finland. However, Ludic and V\~{o}ro are not
+captured in this cluster, yet they are spoken in the same region.
+
+Another interesting cluster occurs on the top right of the plot, where
+we find Bulgarian, Russian, Polish and Aymaran. There is some
+commonality between Russian, Bulgarian and Polish in that they're
+fusional slavic languages, but Aymaran is an indigenous South American
+language. Rather we'd expect Czech to appear here, but in the figure
+it's located further to the south.
+
+In general, our model's language embeddings appear to learn some
+relationships between languages, but certainly not all of
+them. However, that we find some common patters in encouraging for
+future work.
 
 \section{Conclusions and future Work}
 
