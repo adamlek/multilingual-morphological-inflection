@@ -128,10 +128,10 @@ its \emph{inflected form} given a set of \emph{grammatical features}
 (such as \texttt{tense} or \texttt{person}).  Different languages have
 different strategies, or morphological processes such as affixation,
 circumfixation, or reduplication among others
-\cite{haspelmath2013understanding}, to transform a lemma into an
-inflected form that expresses some grammatical features.  One way to
-characterise how languages express grammatical features is a spectrum
-of morphological typology ranging from agglutinative to isolating. In
+\cite{haspelmath2013understanding}.  These are all ways to make a
+lemma expresses some grammatical features.  One way to characterise
+how languages express grammatical features is a spectrum of
+morphological typology ranging from agglutinative to isolating. In
 agglutinative languages grammatical features are encoded as bound
 morphemes attached to the lemma, while in isolating languages each
 grammatical feature is represented as a lemma. Thus, languages in
@@ -154,12 +154,16 @@ expressing information given by grammatical features.
 %strategies of incorporating information given by grammatical features.
 
 In recent years, statistical and neural models have been performing
-very well on this task \cite{DBLP:conf/eacl/SmitVGK14,
-kann2016med}. We follow this tradition and implement a neural
-multilingual model for morphological inflection. In a multilingual
-system, a single model is developed to process multiple languages,
-such that we can give it either a word in for example Swedish or
-Evenk, which will be inflected.
+well on he task of marphological inflection
+\cite{DBLP:conf/eacl/SmitVGK14, kann2016med,
+DBLP:conf/conll/MakarovRC17, sharma-etal-2018-iit}. We follow this
+tradition and implement a neural multilingual model for morphological
+inflection. In a multilingual system, a single model is developed to
+handle input from several different languages, such that we can give
+the model either a word in Evenk or Russian which it will inflect.
+
+%process multiple languages, such that we can give it either a word in
+%for example Swedish or Evenk, which will be inflected.
 
 
 
@@ -238,10 +242,8 @@ for the different languages vary greatly in size, from $138$ examples
 (Ludic) to $100310$ (Turkish).  For the low-resourced
 languages\footnote{We consider languages with less than 10 000
 training examples as low-resource in this paper.} we produce
-\textbf{hallucinated data} to train on. We follow
-\cite{DBLP:conf/emnlp/AnastasopoulosN19}, and produce a new inflected
-form by replacing the parts of an existing inflected form that
-overlap with the lemma.
+\textbf{hallucinated data} \cite{DBLP:conf/emnlp/AnastasopoulosN19} to
+train on.
 
 With respect to the work of \citet{DBLP:conf/emnlp/AnastasopoulosN19},
 we make the following changes. We identify all subsequences of length
@@ -249,9 +251,9 @@ $3$ or more that overlap in the lemma and inflection. We then randomly
 sample one of them, denoted $R$, as the sequence to be replaced.  For
 each language, we compile a set $\mathcal{C_L}$ containing all
 (1,2,3,4)-grams in the language. We construct a string $G$ to replace
-$R$ with by uniformly sampling \textit{n}-grams from $\mathcal{C}$ and
-concatenating them $G = g_0, ..., g_m$ until we have a sequence whose
-length satisfy: $|R|-2 \leq |(g_0, ..., g_m)| \leq |R|+2$.
+$R$ with by uniformly sampling \textit{n}-grams from $\mathcal{C_L}$ and
+concatenating them $G = \mathsf{cat}(g_0, ..., g_m)$ until we have a sequence whose
+length satisfy: $|R|-2 \leq |G| \leq |R|+2$.
 
 %To generate a new
 %subsequence we randomly sample a set $G$ of 
@@ -260,10 +262,10 @@ length satisfy: $|R|-2 \leq |(g_0, ..., g_m)| \leq |R|+2$.
 %such that $|r|-2 \leq |(g_0, ..., g_n)| \leq |r|+2$ and replace $r$
 %with the concatenation of $(g_0, ..., g_n)$. % fix notation...
 
-Additionally, we don't consider subsequences which include a
-phonological symbol \footnote{Thus in \cref{fig:hall} a subsequence of
+Additionally, we do not consider subsequences which include a
+phonological symbol. \footnote{Thus in \cref{fig:hall} a subsequence of
 length 2 is selected as the sequence to be replaced, since the larger subsequences
-would include the phonological symbol :}.  A schematic of the hallucination
+would include the phonological symbol :}  A schematic of the hallucination
 process is shown in \cref{fig:hall}.
 
 
@@ -274,42 +276,47 @@ process is shown in \cref{fig:hall}.
 \end{figure}
 
 
-For each language with fewer than 10 000 examples, we sample 10 000
-new examples. A visualization of the final number of examples in each
-language is shown in \cref{fig:data}.
+Sampling $n$-grams instead of single character allows us to retain
+some of the orthography and phonological information present in the
+language.  We generate a set of 10 000 hallucinated examples for each
+of the low-resource languages.
 
-\begin{figure}[ht]
-\begin{tikzpicture}
-    \begin{axis}[
-        ybar stacked,
-        ymin=0,
-        ymax=105000,
-        scaled y ticks={false},
-        xtick=data,
-        legend style={
-            cells={anchor=west},
-            legend pos=north east,
-        },
-        width=\columnwidth*1.15,
-        height=150pt,
-        /pgf/bar width=4pt,
-        reverse legend=true,
-        xticklabels from table={\testdata}{lang},
-        xticklabel style={text width=1cm,align=center,font=\tiny,rotate=90},
-        yticklabel style={text width=1cm,align=center,font=\tiny,rotate=90}
-    ]
-        \addplot [fill=green!50]
-            table [y=natural, meta=lang, x expr=\coordindex]
-                {\testdata};
-                    \addlegendentry{natural}
-        \addplot [fill=blue!50]
-            table [y=hallucinated, meta=lang, x expr=\coordindex]
-                {\testdata};
-                    \addlegendentry{hallucinated}
-    \end{axis}
-\end{tikzpicture}
-\caption{\label{fig:data} Number of natural and hallucinated examples in each language.}
-\end{figure}
+%For each language with fewer than 10 000 examples, we sample 10 000
+%new examples. A visualization of the final number of examples in each
+%language is shown in \cref{fig:data}.
+
+%\begin{figure}[ht]
+%\begin{tikzpicture}
+%    \begin{axis}[
+%        ybar stacked,
+%        ymin=0,
+%        ymax=105000,
+%        scaled y ticks={false},
+%        xtick=data,
+%        legend style={
+%            cells={anchor=west},
+%            legend pos=north east,
+%        },
+%        width=\columnwidth*1.15,
+%        height=150pt,
+%        /pgf/bar width=4pt,
+%        reverse legend=true,
+%        xticklabels from table={\testdata}{lang},
+%        xticklabel style={text width=1cm,align=center,font=\tiny,rotate=90},
+%        yticklabel style={text width=1cm,align=center,font=\tiny,rotate=90}
+%    ]
+%        \addplot [fill=green!50]
+%            table [y=natural, meta=lang, x expr=\coordindex]
+%                {\testdata};
+%                    \addlegendentry{natural}
+%        \addplot [fill=blue!50]
+%            table [y=hallucinated, meta=lang, x expr=\coordindex]
+%                {\testdata};
+%                    \addlegendentry{hallucinated}
+%    \end{axis}
+%\end{tikzpicture}
+%\caption{\label{fig:data} Number of natural and hallucinated examples in each language.}
+%\end{figure}
 
 
 %We improve upon [REF] in the following way.
@@ -326,28 +333,24 @@ across all languages.
 
 \subsection{Model}
 
-We can account for different languages in our single model in several
-ways, in this paper we use a language embedding as the first position
-in the representation of the lemma and inflection.
-
-% We use a language embedding as the first position in our input, thus
-% the input is $[lang_{id}, emb_{c_0},..., emb_{c_n}]$.
-
-We employ an encoder-decoder architecture with attention. The first
-layer in the model is comprised of an LSTM, which produces a
-contextual representation for each character in the lemma.
-
+To account for different languages in our model we prepend a language
+embedding to the input.
+To model inflection we employ an encoder-decoder architecture with
+attention. The first layer in the model is comprised of an LSTM, which
+produces a contextual representation for each character in the lemma.
 We encode the tags using a self-attention module (equivalent to a
 1-head transformer layer).  This layer does not use any positional
-data: indeed the order of the tags does not matter (REF).
+data: indeed the order of the tags does not matter
+\cite{DBLP:conf/emnlp/AnastasopoulosN19}.
 
-We use an LSTM decoder with two attention modules. One attending to
-the lemma and one to the tags. For the lemma attention, we use a
-content-based attention module \cite{graves2014neural,
-karunaratne2021robust} which uses cosine similarity.  However, we
-found that using content-based attention only causes attention to be
-too focused on a single character, and mostly ignores contextual cues
-relevant for the generation.
+To generate inflections, we use an LSTM decoder with two attention
+modules. One attending to the lemma and one to the tags. For the lemma
+attention, we use a content-based attention module
+\cite{graves2014neural, karunaratne2021robust} which uses cosine
+similarity as its scoring method.  However, we found that using
+content-based attention only causes attention to be too focused on a
+single character, and mostly ignores contextual cues relevant for the
+generation.
 
 To remedy this, we combine the content-based attention with additive
 %attention as follows, where superscript $cos$ indicate cosine
@@ -367,23 +370,42 @@ $add$ additive attention and $k$ the key:
 	att^{cb} & = \sum_{t=1}^{T}a_t^{cb}h_t^{cb}\\
 	att & = \mathsf{W}[att^{cb}; att^{add}]
 \end{align*}
+
+In addition to combining content-based attention and additive
+attention we also employ regularization to the attention modules such
+that for each decoding step, the attention is encouraged to distribute
+the attention weights $a$ uniformly across the lemma and tag hidden
+states \cite{DBLP:conf/emnlp/AnastasopoulosN19,
+DBLP:conf/naacl/CohnHVYDH16}. We employ additive attention for the tags
+
 %(in the above $h_t$ refers to the encoder's contextual representation for each character.)
-We employ additive attention for the tags. In each decode-step we pass the
-concatenation of the character embedding obtained from the previous
-step, the lemma attention, and the tag attention to the decoder.
+In each decode-step we pass the gold or predicted character embedding
+to the decoding LSTM. We then take the output as the key and calculate
+attention over the lemma and tags. This representation is then passed
+to a two-layer perceptron:
+
+\begin{equation*}
+\mathsf{softmax}(\mathsf{W}_c(\mathsf{ReLU}(\mathsf{W}_dx+b_d))) = y
+\end{equation*}
+
+Where $x$ is the concatenation of the hidden state, cell state, lemma
+attention and tag attention.
 
 % \[\text{input}_t = [e_{t-1}; att_{char}; att_{tag}]\]
 
 \subsection{Multi-task learning}
 
-Instead of predicting the inflected form, one can also predict the
-Levenshtein operations needed to transform the lemma into the
-inflected form; as inspired by \cite{DBLP:conf/conll/MakarovRC17}.
+Instead of predicting the characters in the inflected form, one can
+also predict the Levenshtein operations needed to transform the lemma
+into the inflected form; as shown by
+\cite{DBLP:conf/conll/MakarovRC17}.
 
 A benefit of considering operations instead of characters needed to
-transform a lemma to its inflected form is that the script used is a
-much lesser factor here. We find that making \emph{both} predictions,
-as a multi-task setup, improves the performance of the system.
+transform a lemma to its inflected form is that the script used is
+less of a factor, since by considering the operations only we abstract
+away from the script used. We find that making \emph{both}
+predictions, as a multi-task setup, improves the performance of the
+system.
 
 The multi-task setup operates on the character level, thus for each
 contextual representation of a character we want to predict an
@@ -413,10 +435,11 @@ the \texttt{cp}, \texttt{del}, and \texttt{sub} operations based on
 the encoded hidden states in the lemma.  The task of lemma-additions
 then is performed by predicting the \texttt{cp}, \texttt{add}, and
 \texttt{sub} operations on the characters generated by the decoder.
-We use a single 2-layer perceptron with ReLU activation to predict
-both lemma-reduction and lemma-additions. \footnote{In the future,
-we'd like to experiment with including the representations of tags in
-the input to the operation classifier.}
+We use a single two-layer perceptron with ReLU activation (same
+structure as our character prediction network) to predict both
+lemma-reduction and lemma-additions. \footnote{In the future, we'd
+like to experiment with including the representations of tags in the
+input to the operation classifier.}
 
 
 %\jp{I don't see how this solves the length problem?}
@@ -438,23 +461,22 @@ the input to the operation classifier.}
 %in the previous epoch, in ascending order such that the easy (low
 %loss) occurs before the difficult examples (high loss).
 
-We employ a competence-based curriculum learning strategy based on the
-work of \cite{DBLP:conf/acl/LiuLWC20} and
-\cite{platanios2019competence}. A competence curriculum learning
-strategy construct a curriculum based on the \textit{competence} of a
-model, and present examples which the model is deemed to be able to
-handle. Thus, the model will gradually be presented with new more
-difficult examples. The goal of this strategy is for the model to
-transfer or apply the knowledge it acquired from the easy examples to
-the hard examples.
+We employ a competence-based curriculum learning strategy
+\cite{DBLP:conf/acl/LiuLWC20, platanios2019competence}. A competence
+curriculum learning strategy constructs a learning curriculum based on
+the \textit{competence} of a model, and present examples which the
+model is deemed to be able to handle. Thus, the model will gradually
+be presented with new more difficult examples. The goal of this
+strategy is for the model to transfer or apply the information it
+acquires from the easy examples to the hard examples.
  
 To estimate an initial difficulty for an example we consider the
 unigram probability of the lemma and inflection. That is for a word
-(either the lemma or inflection) $c_0, ..., c_k$, the unigram log
+(either the lemma or inflection) $w = c_0, ..., c_k$, the unigram log
 probability is given by:
 
 \begin{equation}
-    P_U(w) = \sum_{m=1}^{M} logp(c_i)
+    P_U(w) = \sum_{k=1}^{K} logp(c_k)
 \end{equation}
 
 To get a score for a lemma and inflection pair (henceforth $(x,y)$),
@@ -464,9 +486,14 @@ we calculate it as the sum of the log probabilities of $x$ and $y$:
     score(x,y) = P_U(x) + P_U(y)
 \end{equation}
 
-We then sort the examples and use a cumulative density function to map
-the unigram probabilities to a score in the range $(0, 1]$, we denote
-the training set of pairs and their scores
+Note that here we do not normalise by the length of the inflection and
+lemma. This is because an additional factor in how difficult an
+example should be considered is its length, i.e. longer words are
+harder to model.
+
+We then sort the examples and use a cumulative density function (CFD)
+to map the unigram probabilities to a score in the range $(0, 1]$, we
+denote the training set of pairs and their scores
 $((x,y), s)_0, \ldots, ((x,y), s)_m$, where $m$ indicate the number of
 examples in the dataset, as $\mathcal{D}$.
 
@@ -506,8 +533,8 @@ characters but also include rare morphological processes (or rare
 combinations of Levenshtein operations), to account for this we
 recompute the example scores for each training step. We sort the
 examples in each training step according to the \textbf{decoding
-loss}, then assign a new score to the batch examples in the range
-$(0, 1]$.
+loss}, then assign a new score to the examples in the range
+$(0, 1]$ using a CDF function.
 
 We also have to take into account that as the model competence grows,
 ``easy'' (low loss or high unigram probability) examples will be
@@ -520,6 +547,23 @@ time-step:
 \begin{equation}
 \mathsf{weighted\ loss}(x, y) = \mathsf{loss}(x, y) \times \frac{score(x, y)}{c(t)}
 \end{equation}
+
+Because the value of our model competence is tied to a specific number
+of training steps, we develop a probabilistic strategy for sampling
+batches when the model have reached full competence. 
+When the model reaces full competence we construct language weights
+$L$, by dividing the number of examples in a language by the total
+number of examples in the dataset and taking the inverse distribution
+as the language weights.
+
+Thus for each language we get a value in the range $(0,1]$ where
+low-resource languages receive a higher weight.  To construct a batch
+we continue by sampling examples, but now we only add an example if
+$r \sim \rho$, where $\rho$ is a uniform Bernoulli distribution, is
+less than the language weight of the example.  This strategy allow us
+to continue training our model after reaching full competence without
+neglecting the low-resource languages.
+
 
 %Remember, we recompute the difficult of each example at every training
 %step, assigning it a new score in the range $(0, 1]$.
@@ -548,11 +592,11 @@ address this issue we use scheduled sampling
 
 We implement a simple schedule for calculating the probability of
 using the gold characters or the model's prediction by using a global
-sample probability variable which is updated at each epoch. We start
-with a probability \(\rho\) of 100\% to take the gold. At each epoch,
-we decrease \(\rho\) by 4\%. For each character, we take a sample from
-the Bernoulli distribution of parameter \(\rho\) to determine the
-decision to make.
+sample probability variable which is updated at each training-step. We
+start with a probability \(\rho\) of 100\% to take the gold. At each
+epoch, we decrease \(\rho\) by $\frac{1}{\mathsf{total steps}}$. For each
+character, we take a sample from the Bernoulli distribution of
+parameter \(\rho\) to determine the decision to make.
 
 \subsection{Training}
 
@@ -566,6 +610,25 @@ We use cross-entropy loss for the character generation loss and
 for the operation predictions tasks. Our final loss function consists
 of the character generation loss, the lemma-reduction and the
 lemma-addition losses summed.
+
+\begin{table}[ht!]	
+\centering
+\begin{tabular}{lc}
+\textsc{Hyperparameter} & \textsc{Value} \\
+  \hline
+  Batch Size & 256 \\
+  Embedding dim & 128 \\
+  Hidden dim & 256 \\
+  Training steps & 240000 \\
+  Steps for full competence & 60000 \\
+  Initial LR & 0.001 \\
+  Min LR & 0.0000001 \\
+  Smoothing-$\alpha$ & 2.5\% \\
+\end{tabular} 
+\caption{Hyperparameters used. As we use a probabilistic approach to training we report number of training steps rather than epochs. In total, the number of training steps we take correspond to about 35 epochs.}
+\label{tab:hp}
+\end{table}
+
 
 \paragraph{Language-wise Label smoothing} We use language-wise label
 smoothing to calculate the loss. This means that we remove $\alpha$
@@ -588,37 +651,22 @@ characters from its prediction at test-time. (We found that
 %processes involved in more difficult words can be discovered from the
 %operations involved in the easier examples.
 
-The hyperparameters used for training are presented in \cref{tab:hp} below.
-\begin{table}[h]	
-\centering
-\begin{tabular}{lc}
-\textsc{Hyperparameter} & \textsc{Value} \\
-  \hline
-  Batch Size & 256 \\
-  Embedding dim & 128 \\
-  Hidden dim & 256 \\
-  Training steps & 240000 \\
-  Steps for full competence & 60000 \\
-  Initial LR & 0.001 \\
-  Min LR & 0.0000001 \\
-  Smoothing-$\alpha$ & 2.5\% \\
-\end{tabular} 
-\caption{Hyperparameters used. As we use a probabilistic approach to training we report number of training steps rather than epochs. In total, the number of training steps we take correspond to about 35 epochs.}
-\label{tab:hp}
-\end{table}
+The hyperparameters used for training are presented in \cref{tab:hp} above.
+
 
 \section{Results}
 
-During test-time we use beam-decoding to produce a final inflected
-form.
+%During test-time we use beam-decoding to produce a final inflected
+%form.
 
 The results from our system are presented in
-\cref{tab:accuracy-dev}. Each language is exavluated by two metrics,
+\cref{tab:accuracy-dev}. Each language is evaluated by two metrics,
 exact match and average levenshtein distance. The average levenshtein
 distance is on average, how many operations is required to transform
-the system's guess to the gold inflected form.
+the system's guess to the gold inflected form (that is, $0$ is the
+best score).
 
-\begin{table}[ht!]	
+\begin{table}[ht!]
 \centering
 \begin{tabular}{lrr}
 \textsc{Lang} & \textsc{EM} & \textsc{Lev dist}  \\
@@ -711,7 +759,12 @@ the system's guess to the gold inflected form.
 %and thus can model them better, which makes using the previous
 %hidden state more reliable as input when predicting the next token.
 
-\begin{figure}[ht]
+One challenging aspect of this dataset for our model is balancing the
+information the model learns about low- and high-resource
+languages. We plot the accuracy the model achieved against the data
+available for that language in \cref{fig:data_acc}.
+
+\begin{figure}
 \begin{tikzpicture}
     \begin{axis}[
         ybar stacked,
@@ -767,21 +820,47 @@ the system's guess to the gold inflected form.
 \end{tikzpicture}
 \caption{\label{fig:data_acc} Number of examples (left $x$-axis)
 plotted against the exact match accuracy (right $x$-axis) of our
-system on the development data..}
+system on the development data. The accuracy for any given language is
+shown by the red line.}
 \end{figure}
 
+We note that for all languages with roughly more than 30 000 examples
+our model performs quite well, achieving around $98\%$ accuracy. When
+we consider languages that have around to 10 000 natural examples and
+no hallucinated data the accuracy drops closer to round $50\%$. For
+the languages with hallucinated data we would expect this trend to
+continue as the data is synthetic and does not take into account
+orthographic or phonological information as natural language examples
+do.  That is, when constructing hallucinated examples, orthography and
+phonology is taken into account only indirectly because we consider
+$n$-grams instead of charaters when finding the replacement
+sequence. However, we find that for many of the languages with
+hallucinated data the exact match accuracy is above $50\%$, but varies
+a lot depending on language.
 
-\section{Discussion}
+Two of the worst languages in our model is Classical Syriac (syc) and
+Xibe (sjo).  An issue with Classical Syriac is that the language uses
+a unique script, Syriac Abjad, which would make it difficult for the
+model to transfer information about operations and common character
+combinations/transformations into Classical Syriac from related
+languages such as Modern Standard Arabic (which is spoken in the
+region). For Xibe there is a similar story, it use the Sibe alphabet
+which is a variant of manchu script, which does not occur elsewhere in
+our dataset.
 
-\subsection{...}
+
+%\section{Discussion}
+
+\section{Language similarities}
 
 For a model that processes many different languages it must have the
-ability to recognize different languages, which our models appears to
-be able to. We can follow up this with the question whether the model
-can find simiarities between different languages. To explore this we
-investigate whether the language embeddings learnt by the model
-produce clusters of language families. A t-SNE [REF] plot of the
-language embeddings is shown in \cref{fig:lang_tsne}.
+ability to recognize different languages.  In addition to recognizing
+languages (which are included in the input) it would be encouraging if
+the model also was able to find similarities between languages.  To
+explore this we investigate whether the language embeddings learnt by
+the model produce clusters of language families. A t-SNE
+\cref{van2008visualizing} plot of the language embeddings is shown in
+\cref{fig:lang_tsne}.
 
 \begin{figure}[ht]
 \centering
@@ -792,26 +871,53 @@ embeddings. Different colors indicate different language families.}
 
 The plot shown that the model is able to find some family resemblence
 between languages. For example we have a Uralic cluster consisting of
-the languages Veps, Olonets and Karelian which are all spoken in a
-region around Russia and Finland. However, Ludic and V\~{o}ro are not
-captured in this cluster, yet they are spoken in the same region.
+the languages Veps (vep), Olonets (olo) and Karelian (krl) which are
+all spoken in a region around Russia and Finland. However, Ludic (lud)
+and V\~{o}ro (vro) are not captured in this cluster, yet they are
+spoken in the same region.
 
-Another interesting cluster occurs on the top right of the plot, where
-we find Bulgarian, Russian, Polish and Aymaran. There is some
-commonality between Russian, Bulgarian and Polish in that they're
-fusional slavic languages, but Aymaran is an indigenous South American
-language. Rather we'd expect Czech to appear here, but in the figure
-it's located further to the south.
+Another interesting collection of language embeddings occur in the top
+right of the plot, where we find Bulgarian, Russian, Polish and
+Aymaran. There is some commonality between Russian, Bulgarian and
+Polish in that they're fusional slavic languages, but Aymaran is an
+agglutinative indigenous South American language. Rather we'd expect
+Czech to appear here, but in the figure it's located further to the
+south. 
 
 In general, our model's language embeddings appear to learn some
 relationships between languages, but certainly not all of
 them. However, that we find some common patters in encouraging for
 future work.
 
+%\subsection{Scheduled Sampling}
+
+%The scheduled learning module also doesn't add that much to our
+%model. We hypothesise this is because the low-resource languages
+%benefit from using the gold as input when predicting the next
+%character, while high-resource languages do not need this as
+%much. The model has seen more examples from high-resource languages
+%and thus can model them better, which makes using the previous
+%hidden state more reliable as input when predicting the next token.
+
 \section{Conclusions and future Work}
 
-We presented 
+We have presented a single multilingual model for morphological
+inflection in $38$ languages enhanced with different training
+strategies: curriculum learning, multi-task learning, scheduled
+sampling and language-wise label smoothing.  
+The results indicate that our model to some extent capture
+similarities between the input languages, and are able to produce
+inflections with an average exact match accuracy of about $80\%$. 
 
+In future work we plan on exploring curriculum learning in more detail
+and move away from estimating the competence of our model linearly,
+and instead estimate the competence based on accuracy in the
+batches. Another interesting line of work here is instead of scoring
+the examples by model loss alone, combine it with insights from language aquisition and teaching \cite{ionin2002easier, slabakova2010easy}.
+
+We also plan to investigate language-wise label smoothing more
+closely, specifically how the value of $\alpha$ should be fine-tuned
+with respect to the number of characters and languages.
 
 \section*{Acknowledgments}
 
