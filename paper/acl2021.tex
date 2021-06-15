@@ -106,14 +106,11 @@
 \begin{document}
 \maketitle
 \begin{abstract}
-This paper presents the submission of team GUCLASP to SIGMORPHON
-2021 Shared Task on Generalization in Morphological Inflection
-Generation. 
-
-We develop a single multilingual model for all languages and explore
-several training strategies.
-
-....
+This paper presents the submission of team GUCLASP to SIGMORPHON 2021
+Shared Task on Generalization in Morphological Inflection Generation.
+We develop a multilingual model for Morphological Inflection and
+primarily focus on improving the model by using various training
+strategies to improve accuracy and generalization across languages.
 \end{abstract}
 
 \section{Introduction}
@@ -347,14 +344,13 @@ DBLP:conf/naacl/CohnHVYDH16}. We employ additive attention for the tags.
 In each decoding step, we pass the gold or predicted character embedding
 to the decoding LSTM. We then take the output as the key and calculate
 attention over the lemma and tags. This representation is then passed
-to a two-layer perceptron:
+to a two-layer perceptron with $\mathsf{ReLU}$ activations.
 
-\begin{equation*}
-\mathsf{softmax}(\mathsf{W}_c(\mathsf{ReLU}(\mathsf{W}_dx+b_d))) = y
-\end{equation*}
-
-Where $x$ is the concatenation of the hidden state, cell state, lemma
-attention and tag attention.
+%\begin{equation*}
+%\mathsf{softmax}(\mathsf{W}_c(\mathsf{ReLU}(\mathsf{W}_dx+b_d))) = y
+%\end{equation*}
+%Where $x$ is the concatenation of the hidden state, cell state, lemma
+%attention and tag attention.
 
 % \[\text{input}_t = [e_{t-1}; att_{char}; att_{tag}]\]
 
@@ -430,8 +426,7 @@ We employ a competence-based curriculum learning strategy
 \cite{DBLP:conf/acl/LiuLWC20, platanios2019competence}. A competence
 curriculum learning strategy constructs a learning curriculum based on
 the \textit{competence} of a model, and present examples which the
-model is deemed to be able to handle. Thus, the model will gradually
-be presented with new more difficult examples. The goal of this
+model is deemed to be able to handle. The goal of this
 strategy is for the model to transfer or apply the information it
 acquires from the easy examples to the hard examples.
  
@@ -536,8 +531,6 @@ the model to be fully competent after $60 000$ training steps.
 %Remember, we recompute the difficult of each example at every training
 %step, assigning it a new score in the range $(0, 1]$.
 
-
-
 %For the first epoch, when we dont have any loss refer to for sorting,
 %we sort the dataset according to the ratio of copy operations to other
 %operations. We found that this strategy performed better than any of
@@ -579,7 +572,8 @@ for the operation predictions tasks. Our final loss function consists
 of the character generation loss, the lemma-reduction, and the
 lemma-addition losses summed. We use a cosine annealling learning rate
 scheduler \cite{DBLP:conf/iclr/LoshchilovH17}, gradually decreasing
-the learning rate.
+the learning rate. The hyperparameters used for training are presented
+in \cref{tab:hp}.
 
 \begin{table}[ht!]	
 \centering
@@ -612,7 +606,7 @@ smoothing this way is that we know that all incorrect character
 predictions are not \emph{equally} incorrect. For example, when
 predicting the inflected form of a Modern Standard Arabic (ara) word,
 it is more correct to select \emph{any} character from the arabic
-alphabetbet than a character from the latin or cyrillic alphabet.  A
+alphabet than a character from the latin or cyrillic alphabet.  A
 difficulty is that each language potentially uses a different set of
 characters. We calculate this set using the training set only--- so it
 is important to make $\alpha$ not too large, so that there is not a
@@ -629,7 +623,7 @@ that \(\alpha=2.5\%\) is a good value.)
 %processes involved in more difficult words can be discovered from the
 %operations involved in the easier examples.
 
-The hyperparameters used for training are presented in \cref{tab:hp} above.
+%The hyperparameters used for training are presented in \cref{tab:hp} above.
 
 
 \section{Results}
@@ -755,7 +749,7 @@ available for that language in \cref{fig:data_acc}.
             cells={anchor=west},
             legend pos=north east,
         },
-        width=\columnwidth*1.15,
+        width=\columnwidth*1.1,
         height=180pt,
         /pgf/bar width=4pt,
         reverse legend=true,
@@ -783,7 +777,7 @@ available for that language in \cref{fig:data_acc}.
       %ytick style={draw=none},
       axis y line*=right,
       %axis x line*=top
-      width=\columnwidth*1.15,
+      width=\columnwidth*1.1,
       height=180pt,
       %xticklabels from table={\testdata}{lang},
       xticklabels={},
@@ -857,9 +851,13 @@ Another interesting collection of language embeddings occur in the top
 right of the plot, where we find Bulgarian, Russian, Polish and
 Aymaran. There is some commonality between Russian, Bulgarian and
 Polish in that they're fusional Slavic languages, but Aymaran is an
-agglutinative indigenous South American language. Rather we'd expect
-Czech to appear here, but in the figure it's located further to the
-south. 
+agglutinative indigenous South American language. 
+
+We can see that the model seem to seperate language families somewhat
+depending on the script used. The Afro-Asiatic languages are split
+into two smaller clusters, one cluster containing the languages that
+use Standard Arabic script and one cluster that use Amhraic and Hebrew
+script.
 
 In general, our model's language embeddings appear to learn some
 relationships between languages, but certainly not all of
@@ -881,10 +879,11 @@ future work.
 We have presented a single multilingual model for morphological
 inflection in $38$ languages enhanced with different training
 strategies: curriculum learning, multi-task learning, scheduled
-sampling and language-wise label smoothing.  
-The results indicate that our model to some extent capture
-similarities between the input languages, and can produce
-inflections with an average exact match accuracy of about $80\%$. 
+sampling and language-wise label smoothing.  The results indicate that
+our model to some extent capture similarities between the input
+languages, however, languages that use different scripts appears
+problematic. A possible solution to these cases would be to use some
+form of transliteration to translate all words to a single script.
 
 In future work, we plan on exploring curriculum learning in more detail
 and move away from estimating the competence of our model linearly,
