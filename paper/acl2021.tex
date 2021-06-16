@@ -41,45 +41,45 @@
         compat/bar nodes=1.8,
     }
     \pgfplotstableread{
-        lang natural hallucinated acc
-        tur	100310 0 98.85
-        olo	100062 0 99.35
-        vep	100053 0 99.33
-        sah	100046 0 99.87
-        por	100041 0 98.37
-        pol	100039 0 97.47
-        ara	100027 0 98.58
-        tyv	100015 0 98.49
-        kmr	100003 0 98.31
-        rus	100002 0 96.86
-        spa	100001 0 98.66
-        aym	100000 0 99.80
-        deu	100000 0 93.25
-        ces	94169 0 93.96
-        krl	78673 0 97.87
-        bul	39011 0 98.04
-        nld	38827 0 92.33
-        amh	32254 0 97.11
-        heb	23204 0 95.0
-        afb	22165 0 91.16
-        arz	17683 0 92.52
-        cni	13948 0 91.43
-        ckb	11577 0 71.72
-        ind	11072 0 61.94
-        evn	5216 10000 52.17
-        see	3801 10000 52.42
-        ame	2524 10000 74.17
-        itl	1246 10000 31.31
-        syc	1217 10000 15.7
-        bra	1082 10000 62.09
-        ail	918 10000 91.98
-        mag	854 10000 63.64
-        vro	804 10000 78.07
-        kod	323 10000 80.43
-        sjo	290 10000 36.59
-        gup	214 10000 26.67
-        ckt	132 10000 55.56
-        lud	128 10000 66.67
+        lang natural hallucinated acc1 acc2
+        tur	100310 0 98.85 98.86
+        olo	100062 0 99.35 99.37
+        vep	100053 0 99.33 99.24
+        sah	100046 0 99.87 99.84
+        por	100041 0 98.37 98.63
+        pol	100039 0 97.47 98.01
+        ara	100027 0 98.58 89.72
+        tyv	100015 0 98.49 98.65
+        kmr	100003 0 98.31 98.30
+        rus	100002 0 96.86 97.1
+        spa	100001 0 98.66 98.48
+        aym	100000 0 99.80 99.83
+        deu	100000 0 93.25 94.41
+        ces	94169 0 93.96 93.77
+        krl	78673 0 97.87 98.16
+        bul	39011 0 98.04 90.57
+        nld	38827 0 92.33 93.63
+        amh	32254 0 97.11 97.57
+        heb	23204 0 95.0 96.13
+        afb	22165 0 91.16 90.85
+        arz	17683 0 92.52 92.36
+        cni	13948 0 91.43 92.65
+        ckb	11577 0 71.72 86.5
+        ind	11072 0 61.94 70.24
+        evn	5216 10000 52.17 51.08
+        see	3801 10000 52.42 76.21
+        ame	2524 10000 74.17 67.11
+        itl	1246 10000 31.31 60.3
+        syc	1217 10000 15.7 27.33
+        bra	1082 10000 62.09 62.09
+        ail	918 10000 91.98 93.28
+        mag	854 10000 63.64 70.25
+        vro	804 10000 78.07 80.7
+        kod	323 10000 80.43 82.61
+        sjo	290 10000 36.59 46.24
+        gup	214 10000 26.67 33.33
+        ckt	132 10000 55.56 61.11
+        lud	128 10000 66.67 72.22
     }\testdata
 
 \aclfinalcopy % Uncomment this line for the final submission
@@ -510,11 +510,11 @@ time-step:
 
 Because the value of our model competence is tied to a specific number
 of training steps, we develop a probabilistic strategy for sampling
-batches when the model has reached full competence. 
-When the model reaches full competence we construct language weights
-$L$, by dividing the number of examples in a language by the total
-number of examples in the dataset and taking the inverse distribution
-as the language weights.
+batches when the model has reached full competence.  When the model
+reaches full competence we construct language weights by dividing the
+number of examples in a language by the total number of examples in
+the dataset and taking the inverse distribution as the language
+weights.
 
 Thus for each language, we get a value in the range $(0,1]$ where
 low-resource languages receive a higher weight.  To construct a batch
@@ -571,9 +571,8 @@ We use cross-entropy loss for the character generation loss and
 for the operation predictions tasks. Our final loss function consists
 of the character generation loss, the lemma-reduction, and the
 lemma-addition losses summed. We use a cosine annealling learning rate
-scheduler \cite{DBLP:conf/iclr/LoshchilovH17}, gradually decreasing
-the learning rate. The hyperparameters used for training are presented
-in \cref{tab:hp}.
+scheduler \cite{DBLP:conf/iclr/LoshchilovH17}. The hyperparameters
+used for training are presented in \cref{tab:hp}.
 
 \begin{table}[ht!]	
 \centering
@@ -587,7 +586,7 @@ in \cref{tab:hp}.
   Steps for full competence & 60000 \\
   Initial LR & 0.001 \\
   Min LR & 0.0000001 \\
-  Smoothing-$\alpha$ & 2.5\% \\
+  Smoothing-$\alpha$ & 2.5\%
 \end{tabular} 
 \caption{Hyperparameters used. As we use a probabilistic approach to
 training we report number of training steps rather than epochs. In
@@ -635,8 +634,7 @@ The results from our system are presented in
 \cref{tab:accuracy-dev}. Each language is evaluated by two metrics,
 exact match, and average Levenshtein distance. The average Levenshtein
 distance is on average, how many operations are required to transform
-the system's guess to the gold inflected form (that is, $0$ is the
-best score).
+the system's guess to the gold inflected form.
 
 \begin{table}[ht!]
 \centering
@@ -681,6 +679,8 @@ best score).
   tyv & 98.49\% & 0.02 \\
   vep & 99.33\% & 0.01 \\
   vro & 78.07\% & 0.39 \\
+  \hline
+  Mean & 80.27\% & 0.57
 \end{tabular} 
 \caption{Results on the development data.}
 \label{tab:accuracy-dev}
@@ -770,10 +770,10 @@ available for that language in \cref{fig:data_acc}.
       %scale only axis,
       scaled y ticks={false},
       ymin=0,
-      ymax=120.0,
+      ymax=110.0,
       xtick=data,
       xtick style={draw=none},
-      every axis plot/.append style={thick},
+      %every axis plot/.append style={nromal},
       %ytick style={draw=none},
       axis y line*=right,
       %axis x line*=top
@@ -785,8 +785,11 @@ available for that language in \cref{fig:data_acc}.
       yticklabel style={text width=1cm,align=center,font=\tiny,rotate=90}
       ]
       \addplot [red]
-          table [y=acc, meta=lang, x expr=\coordindex] {\testdata};
+          table [y=acc1, meta=lang, x expr=\coordindex] {\testdata};
                     %\addlegendentry{acc}
+      %\addplot [blue]
+      %    table [y=acc2, meta=lang, x expr=\coordindex] {\testdata};
+      %              %\addlegendentry{acc}
     \end{axis}
 
 \end{tikzpicture}
@@ -815,10 +818,10 @@ Xibe (sjo).  An issue with Classical Syriac is that the language uses
 a unique script, Syriac Abjad, which would make it difficult for the
 model to transfer information about operations and common character
 combinations/transformations into Classical Syriac from related
-languages such as Modern Standard Arabic (which is spoken in the
-region). For Xibe there is a similar story, it uses the Sibe alphabet
-which is a variant of Manchu script, which does not occur elsewhere in
-our dataset.
+languages such as Modern Standard Arabic (spoken in the region). For
+Xibe there is a similar story, it uses the Sibe alphabet which is a
+variant of Manchu script, which does not occur elsewhere in our
+dataset.
 
 
 %\section{Discussion}
@@ -847,32 +850,39 @@ all spoken in a region around Russia and Finland. However, Ludic (lud)
 and V\~{o}ro (vro) are not captured in this cluster, yet they are
 spoken in the same region.
 
-Another interesting collection of language embeddings occur in the top
-right of the plot, where we find Bulgarian, Russian, Polish and
-Aymaran. There is some commonality between Russian, Bulgarian and
-Polish in that they're fusional Slavic languages, but Aymaran is an
-agglutinative indigenous South American language. 
+%Another interesting collection of language embeddings occur in the top
+%right of the plot, where we find Bulgarian, Russian, Polish and
+%Aymaran. There is some commonality between Russian, Bulgarian and
+%Polish in that they're fusional Slavic languages, but Aymaran is an
+%agglutinative indigenous South American language. 
 
 We can see that the model seem to seperate language families somewhat
 depending on the script used. The Afro-Asiatic languages are split
 into two smaller clusters, one cluster containing the languages that
-use Standard Arabic script and one cluster that use Amhraic and Hebrew
-script.
+use Standard Arabic (ara, afv and arz) script and one cluster that use
+Amhraic and Hebrew (amh, heb) script. As mentioned earlier Classical
+Syriac uses its another script and seems to consequently appear in
+another part of the map.
 
 In general, our model's language embeddings appear to learn some
 relationships between languages, but certainly not all of
 them. However, that we find some common patterns in encouraging for
 future work.
 
-%\subsection{Scheduled Sampling}
+\section{Scheduled Sampling}
 
-%The scheduled learning module also doesn't add that much to our
-%model. We hypothesise this is because the low-resource languages
-%benefit from using the gold as input when predicting the next
-%character, while high-resource languages do not need this as
-%much. The model has seen more examples from high-resource languages
-%and thus can model them better, which makes using the previous
-%hidden state more reliable as input when predicting the next token.
+We note that during the development all of our training strategies
+showed a stronger performance for the task, except one: scheduled
+sampling. 
+We hypothesise this is because the low-resource languages
+benefit from using the gold as input when predicting the next
+character, while high-resource languages do not need this as
+much. The model has seen more examples from high-resource languages
+and thus can model them better, which makes using the previous
+hidden state more reliable as input when predicting the next token.
+Additionally, in low-resource languages a majority of the training
+data is hallucinated, but not the test data, which may be another
+factor.
 
 \section{Conclusions and future Work}
 
