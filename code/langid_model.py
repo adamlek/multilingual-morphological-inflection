@@ -2,11 +2,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from IPython import embed
-import random
 from args import args
 from queue import PriorityQueue
 import operator
-from itertools import takewhile
+import torch.linalg as linalg
+
+from attention_methods import *
 
 device = torch.device('cuda:0')
 EPS = 1e-14
@@ -30,15 +31,21 @@ class Inflector(nn.Module):
         # probability decay of grabbing gold, 30,000-ish steps until probability of grabbing gold = 0
         self.sc_decay_rate = self.sc_e/args.prob_decay_steps 
         
-        self.ops_discriminator = nn.Linear(args.hidden_dim*2, ops, bias=False)
-        self.char_classifier = nn.Sequential(nn.Linear(args.hidden_dim*2, args.hidden_dim*2),
-                                             nn.ReLU(), # ReLU
-                                             nn.Linear(args.hidden_dim*2, vocab, bias=False))
+        if args.multitask_learning:
+            self.ops_discriminator = nn.Sequential(nn.Linear(args.hidden_dim, args.hidden_dim),
+                                                   nn.Dropout(0.2),
+                                                   nn.ReLU(), # ReLU
+                                                   nn.Linear(args.hidden_dim, ops, bias=True))
+            
+        self.char_classifier = nn.Sequential(nn.Linear(args.hidden_dim*4, args.hidden_dim*4),
+                                             nn.Dropout(0.3),
+                                             nn.ReLU(), # ReLU 
+                                             nn.Linear(args.hidden_dim*4, vocab, bias=True))
         
         # dropouts
-        self.encoder_drp = nn.Dropout(0.4) # 0.3 # non-sampling dropouts
-        self.decoder_drp = nn.Dropout(0.4) # 0.3 # non-sampling dropouts
-        self.emb_dropout = nn.Dropout(0.3) # 0.1 # non-sampling dropouts
+        self.encoder_drp = nn.Dropout(0.4) # 0.3
+        self.decoder_drp = nn.Dropout(0.4) # 0.3
+        self.emb_dropout = nn.Dropout(0.2) # 0.1
         
         self.lemma_encoder = nn.LSTM(args.embedding_dim, 
                                      args.hidden_dim, 
@@ -46,8 +53,10 @@ class Inflector(nn.Module):
                                      bidirectional=True)
         self.tag_encoder = SelfAttentionHead(args.embedding_dim, args.hidden_dim)
         
-        self.inflection_decoder = nn.LSTMCell(args.embedding_dim+args.hidden_dim*2, args.hidden_dim)
-        self.scale_encoder_outputs = nn.Linear(args.hidden_dim*2, args.hidden_dim)
+        self.inflection_decoder = nn.LSTMCell(args.embedding_dim, args.hidden_dim)
+        #self.inflection_decoder = nn.LSTMCell(args.hidden_dim*4, args.hidden_dim)
+        self.scale_hidden = nn.Linear(args.hidden_dim*2, args.hidden_dim)
+        #self.scale_hcx = nn.Linear(args.hidden_dim*2, args.hidden_dim)
         
         if args.char_att == 'cos':
             self.char_attention = CosSimAttention(args.hidden_dim, args.hidden_dim)
@@ -61,6 +70,10 @@ class Inflector(nn.Module):
 
         self.tag_attention = BahdanauAttention(args.hidden_dim, args.hidden_dim)
         
+    def get_norms(self, output):
+        embs = torch.argmax(output, -1)
+        embs_norm = linalg.norm(self.char2emb(embs), dim=-1).sum(1)
+        return embs_norm
         
     def get_zeros_init(self, bs, dim):
         return torch.zeros((bs, dim), device=device), torch.zeros((bs, dim), device=device)
@@ -71,29 +84,36 @@ class Inflector(nn.Module):
             return self.inference(lemma, lemma_mask, tags, tags_mask)
         
         # encode input
-        lemma_h, tags_h, *_ = self.encode_inputs(lemma, lemma_mask, tags, tags_mask)
-        
-        ht, ct = self.get_zeros_init(lemma_h.size(0), args.hidden_dim)
-        
-        # set first decoder input to <lang>
-        start_t = self.char2emb(lemma[:,0])
+        lemma_h, tags_h, ht, ct = self.encode_inputs(lemma, lemma_mask, tags, tags_mask)        
+        lemma_h = self.scale_hidden(lemma_h)
         
         # predict operations on lemma
-        opsx_pred = self.ops_discriminator(lemma_h)
+        if args.multitask_learning:
+            # TODO: attend to tags, ops_lemma = att(lemma_h, tags_h)
+            opsx_pred = self.ops_discriminator(lemma_h)
+        else:
+            opsx_pred = 0
         
-        lemma_h = self.scale_encoder_outputs(lemma_h)
-        
-        # decode sequence
-        decode_hiddens, decode_pred = self.batch_decode(start_t, 
-                                                        ht, ct, 
-                                                        lemma_h, lemma_mask, 
-                                                        tags_h, tags_mask, 
-                                                        gold[:,1:],
-                                                        tf)
-             
-        opsy_pred = self.ops_discriminator(decode_hiddens)
+        # get input to decoder
+        start_t = self.char2emb(lemma[:,0])
+        ht, ct = self.get_zeros_init(lemma_h.size(0), args.hidden_dim)
 
-        return decode_pred, opsy_pred, opsx_pred
+        # decode sequence
+        decode_hiddens, decode_pred, atts_c, atts_t = self.batch_decode(start_t, 
+                                                                        ht, ct, 
+                                                                        lemma_h, lemma_mask, 
+                                                                        tags_h, tags_mask, 
+                                                                        gold[:,1:],
+                                                                        tf)
+        if args.multitask_learning:
+            decode_hiddens = self.scale_hidden(decode_hiddens)
+            opsy_pred = self.ops_discriminator(decode_hiddens)
+        else:
+            opsy_pred = 0
+            
+        word_norms = self.get_norms(decode_pred)
+
+        return decode_pred, opsy_pred, opsx_pred, word_norms.tolist(), atts_c, atts_t
     
     def encode_inputs(self, lemma, lemma_mask, tags, tags_mask):
         """
@@ -101,61 +121,61 @@ class Inflector(nn.Module):
         and final hidden states (for the lemma)
         """
         lemma_e = self.encoder_drp(self.char2emb(lemma[:,1:]))
-        lang_e = self.encoder_drp(self.char2emb(lemma[:,0]))
+        lang_e = self.lang2emb(lemma[:,0])
         tags_e = self.encoder_drp(self.tag2emb(tags))
-        
+
         lemma_e = torch.cat([lang_e.unsqueeze(1), lemma_e], 1)
-        
         lemma_h, (ht, ct) = self.lemma_encoder(lemma_e)
         tags_h = self.tag_encoder(tags_e, tags_mask)
         
         return lemma_h, tags_h, ht, ct
         
-    def language_identification(self, hct):
-        l_hat = self.lang_discriminator(hct)
-        return l_hat
-        
     def batch_decode(self, x, hx, cx, lemma, lemma_mask, tags, tags_mask, gold, tf=True):
         hidden_states = torch.zeros((gold.size(0), gold.size(1), args.hidden_dim*2), device=device)
         preds = torch.zeros((gold.size(0), gold.size(1), self.vocab_size), device=device)
+        att_weights_c = torch.zeros((gold.size(0), gold.size(1), lemma.size(1)), device=device)
+        att_weights_t = torch.zeros((gold.size(0), gold.size(1), tags.size(1)), device=device)
         
         for i in range(gold.size(1)):
-            hcx, hx, cx, p_hcx = self.decode_step(x, hx, cx, lemma, lemma_mask, tags, tags_mask)
-            hidden_states[:,i,:] = hcx
-            preds[:,i,:] = p_hcx 
+            hx, cx, p_output, atts_c, atts_t = self.decode_step(x, hx, cx, lemma, lemma_mask, tags, tags_mask)
+            hidden_states[:,i,:] = torch.cat([hx, cx], -1)
+            preds[:,i,:] = p_output 
+            att_weights_c[:,i,:] = atts_c
+            att_weights_t[:,i,:] = atts_t
             
             # scheduled sampling (bengio, 2015)
             if tf and self.sc_e > 0.0:
-                x = self.scheduled_sampling_(p_hcx, gold[:,i]) #hcx
-                if args.sp_step_decay:
-                    self.sc_e = self.sc_e - self.sc_decay_rate if self.sc_e >= 0 else 0
+                x = self.scheduled_sampling_(p_output, gold[:,i]) #hcx
+                if args.scheduled_sampling:
+                    if args.sp_step_decay:
+                        self.sc_e = self.sc_e - self.sc_decay_rate if self.sc_e >= 0 else 0
             else:
-                y_hat = torch.argmax(F.log_softmax(p_hcx, 1), 1)
+                y_hat = torch.argmax(F.log_softmax(p_output, 1), 1)
                 x = self.emb_dropout(self.char2emb(y_hat))
                 
-        return hidden_states, preds
+        return hidden_states, preds, att_weights_c, att_weights_t
     
     def decode_step(self, x, hx, cx, lemma, lemma_mask, tags, tags_mask):
-        #print('decoder hx size:', hx.size())
-        # attention from hidden on encoded lemma
-        x_seq_attn = self.char_attention(hx, lemma, lemma_mask)
-        # attention from hidden_state on encoded tags
-        x_tag_attn = self.tag_attention(hx, tags, tags_mask)
-
-        x = torch.cat([x, x_seq_attn, x_tag_attn], -1)        
-        x = self.decoder_drp(x)
+        # dropout on input embedding
+        x_input = self.decoder_drp(x)
         
-        hx, cx = self.inflection_decoder(x, (hx, cx))
-        hcx = torch.cat([hx, cx], -1)
+        # rnn step
+        hx, cx = self.inflection_decoder(x_input, (hx, cx))
         
-        return hcx, hx, cx, self.char_classifier(hcx)
+        # atttention on lemmas and tags
+        x_seq_attn, l_atts = self.char_attention(hx, lemma, lemma_mask)
+        x_tag_attn, t_atts = self.tag_attention(hx, tags, tags_mask)
+        x_output = torch.cat([hx, cx, x_seq_attn, x_tag_attn], -1)   # <--- test     
+        p_output = self.char_classifier(x_output)
+        
+        return hx, cx, p_output, l_atts, t_atts
     
-    def scheduled_sampling_(self, hcx, gold):
-        probs = torch.rand((hcx.size(0),1), device=device)
+    def scheduled_sampling_(self, p_output, gold):
+        probs = torch.rand((p_output.size(0),1), device=device)
         gold_i = self.emb_dropout(self.char2emb(gold))
-        hcx_i = self.emb_dropout(self.char2emb(torch.argmax(hcx, 1)))
+        p_output_i = self.emb_dropout(self.char2emb(torch.argmax(p_output, 1)))
         x = torch.where(probs > self.sc_e, 
-                        hcx_i,
+                        p_output_i,
                         gold_i)
         return x
     
@@ -171,9 +191,6 @@ class Inflector(nn.Module):
         decoded_batch = self.beam_decode(lemma, lemma_mask, tags, tags_mask)
         return decoded_batch
     
-    def no_beam_inference(self, lemma, lemma_mask, tags, tags_mask):
-        pass
-    
     def beam_decode(self, lemma, lemma_mask, tags, tags_mask):
         '''
         adapted version of: https://github.com/budzianowski/PyTorch-Beam-Search-Decoding/blob/master/decode_beam.py
@@ -185,7 +202,7 @@ class Inflector(nn.Module):
         
         lemma_outputs, tags_outputs, *_ = self.encode_inputs(lemma, lemma_mask, tags, tags_mask)
         start_hx, start_cx = self.get_zeros_init(lemma_outputs.size(0), args.hidden_dim)
-        lemma_outputs = self.scale_encoder_outputs(lemma_outputs)
+        lemma_outputs = self.scale_hidden(lemma_outputs)
 
         # decoding goes sentence by sentence
         for idx in range(lemma.size(0)):
@@ -240,7 +257,7 @@ class Inflector(nn.Module):
                         continue
 
                 # decode one step
-                decoder_hidden, hx, cx, decoder_preds = self.decode_step(decoder_input, 
+                hx, cx, decoder_preds, _, _ = self.decode_step(decoder_input, 
                                                                          hx, cx, 
                                                                          sent_lemma_outputs, 
                                                                          sent_lemma_mask, 
@@ -328,140 +345,3 @@ class BeamSearchNode(object):
         else:
             return False
         
-class CosBahAttention(nn.Module):
-    def __init__(self, in_dim, out_dim):
-        super(CosBahAttention, self).__init__()
-        self.cos = CosSimAttention(in_dim, out_dim)
-        self.bah = BahdanauAttention(in_dim, out_dim)
-        self.linear_combine = nn.Linear(out_dim*2, out_dim)
-    
-    def forward(self, k, xs, mask):
-        cos_repr = self.cos(k, xs, mask)
-        bah_repr = self.bah(k, xs, mask)
-        attn = self.linear_combine(torch.cat([cos_repr, bah_repr], -1))
-        return attn
-
-class CosSimAttention(nn.Module):
-    def __init__(self, in_dim, out_dim):
-        """
-        compute cosine similarity between previous hidden_state and encoded lemma sequence
-        train the model such that the hidden-state generated by the decoder-lstm matches 
-          the lemma in the cases of copy
-        ~= a pointer network
-        """
-        super(CosSimAttention, self).__init__()
-        self.softabs = lambda x, epsilon: torch.sqrt(torch.pow(x, 2.0) + epsilon)
-        self.eps = 1e-3 # 1e-14
-        self.cos = nn.CosineSimilarity(dim=-1)
-    
-    def forward(self, k, xs, mask):
-        cos_sim = self.cos(k.unsqueeze(1).repeat(1,xs.size(1),1), xs)
-        a_cos = self.softabs(cos_sim, self.eps) * mask + EPS
-        attn = torch.einsum('bs,bsk->bk', [a_cos, xs])
-        return attn
-    
-class Attention(nn.Module):
-    def __init__(self, in_dim, out_dim):
-        super(Attention, self).__init__()
-        self.lin = nn.Linear(out_dim, out_dim)
-        self.eps = 1e-14
-        
-    def forward(self, k, xs, mask):
-        #xs = self.scale(xs)
-        a = F.softmax(torch.einsum('bw,bsk->bs', [k, xs]),-1) * mask + EPS
-        attn = torch.einsum('bi,bik->bk', [a, xs])
-        return attn
-    
-class BahdanauAttention(nn.Module):
-    def __init__(self, in_dim, out_dim):
-        super(BahdanauAttention, self).__init__()
-        self.energy = nn.Parameter(torch.randn(in_dim))
-        self.Wa = nn.Linear(in_dim, in_dim)
-        self.Wb = nn.Linear(in_dim, in_dim)
-        
-    def forward(self, k, xs, mask):
-        ks = k.unsqueeze(1).repeat(1,xs.size(1),1)
-        w = torch.tanh(self.Wa(ks) + self.Wb(xs))
-        # calculate "energy"
-        attn = F.softmax(w @ self.energy, -1) * mask + EPS
-        return torch.einsum('bi,bik->bk', [attn, xs])
-    
-class SelfAttentionHead(nn.Module):
-    def __init__(self, in_dim, out_dim):
-        super(SelfAttentionHead, self).__init__()
-        self.k = nn.Linear(in_dim, out_dim) # remove bias here
-        self.q = nn.Linear(in_dim, out_dim)
-        self.v = nn.Linear(in_dim, out_dim)
-        self.lin = nn.Linear(out_dim, out_dim)
-        
-    def forward(self, xs, mask):
-        qk = torch.einsum('bsd,bde->bse', [self.k(xs), self.q(xs).transpose(2,1)])
-        mask = mask.repeat(1,qk.size(1)).view(qk.size())
-        a = F.softmax(qk/xs.size(-1), 1) * mask + EPS
-        attn = torch.einsum('bij,bik->bik', [a, self.v(xs)])
-        attn = F.leaky_relu(self.lin(attn))
-        return attn
-    
-class MultiHeadAttention(nn.Module):
-    def __init__(self, num_heads, in_dim, out_dim):
-        super(MultiHeadAttention, self).__init__()
-        self.out_dim = out_dim
-        self.dropout = nn.Dropout(.33)
-        self.num_heads = num_heads
-        self.heads = nn.ModuleList([SelfAttentionHead(in_dim, out_dim) for _ in range(num_heads)])
-        
-        self.ffn = nn.Sequential(nn.Linear(out_dim*4, out_dim*4, bias=False),
-                                 nn.ReLU(),
-                                 nn.Linear(out_dim*4, out_dim, bias=False))
-        
-    def forward(self, xs, mask):
-        container = torch.zeros((self.num_heads, xs.size(0), xs.size(1), self.out_dim), device=device)
-        for i, head in enumerate(self.heads):
-            container[i,:,:,:] = head(xs, mask)
-            
-        container = torch.cat([container[i,:] for i in range(self.num_heads)], -1)
-        
-        return self.ffn(container)
-            
-class MultiLayerEncoder(nn.Module):
-    def __init__(self, num_heads, num_layers, in_dim, out_dim):
-        super(MultiLayerEncoder, self).__init__()
-        
-        setups = [(in_dim, out_dim)] + [(out_dim, out_dim)]*num_layers
-        self.layers = nn.ModuleList([MultiHeadAttention(num_heads, i_d, o_d) for i_d, o_d in setups])
-        self.dropout = nn.Dropout(.33)
-        self.final_ffn = nn.Sequential(nn.Linear(out_dim, out_dim, bias=False),
-                                       nn.Tanh(),
-                                       nn.Linear(out_dim, out_dim, bias=False))
-    
-    def forward(self, xs, mask):
-        for layer in self.layers:
-            xs = self.dropout(xs)
-            xs = layer(xs, mask)
-        
-        xs = self.dropout(xs)
-        return self.final_ffn(xs)
-    
-class SelfAttentionEncoder(nn.Module):
-    def __init__(self, dim):
-        super(SelfAttentionEncoder, self).__init__()
-        self.dim = dim
-        self.k = nn.Linear(dim, dim)
-        self.q = nn.Linear(dim, dim)
-        self.v = nn.Linear(dim, dim)
-        self.lin = nn.Linear(dim, dim)
-        
-    def forward(self, xs):
-        qk = torch.einsum('bsd,bde->bse', [self.k(xs), self.q(xs).transpose(2,1)])
-        a = F.softmax(qk/self.dim, 1)
-        attn = torch.einsum('bij,bik->bik', [a, self.v(xs)])
-        return torch.tanh(self.lin(attn))
-    
-class DropoutLSTM(nn.Module):
-    def __init__(self, in_dim, out_dim):
-        super(SelfAttentionEncoder, self).__init__()
-        self.in_dim = in_dim
-        self.out_dim = out_dim
-        
-    def forward(self, x):
-        pass

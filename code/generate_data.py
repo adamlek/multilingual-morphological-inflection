@@ -27,6 +27,28 @@ def read_test(path):
             dataset.append([lemma, '_', tags.split(';'), lang, '_'])
     return dataset
             
+def ops_dist():
+    train, dev, test = [], [], []
+    char_freq, tag_freq = {'<pad>':0, '<end>':0, '<start>':0, '<unk>':0}, {'<pad>':0, '<unk>':0}
+    lang_data = defaultdict(dict)
+    pref = '../test_data_release/all_languages/'
+    for lang in os.listdir('../test_data_release/all_languages/'):
+        
+        if lang.endswith('train'):# or lang.endswith('hall'):
+            data, char_freq, tag_freq, n_grams = read_file(f'{pref}{lang}', char_freq, tag_freq)
+            train += data
+        elif lang.endswith('test'):
+            data = read_test(f'{pref}{lang}')
+            print(lang, len(data))
+            test += data
+        else:
+            data, *_ = read_file(f'{pref}{lang}')
+            dev += data
+        lang, dtype = lang.split('.')
+        lang_data[lang][dtype] = len(data)
+            
+    return train, dev, test, lang_data, char_freq, tag_freq
+            
 def read_file(path, char_freq=None, tag_freq=None):
     dataset = []
     char_grams = set()
@@ -58,13 +80,13 @@ def hallucinate_datafiles(num_hall=10000):
             data, char_freq, tag_freq, n_grams = read_file(f'{pref}{lang}', char_freq, tag_freq)
             if len(data) < 10000:
                 print('hallucinating on language:', lang)
-                hallucinated_data = get_hallucinated_data(data, n_grams, num_hall)
+                hallucinated_data = get_hallucinated_data(data, n_grams, num_hall, replace_symbs=False)
                 save_new_data(hallucinated_data, lang, pref)
         else:
             continue
 
 def save_new_data(data, filename, path):
-    filename = path+filename.split('.')[0]+'.hall'
+    filename = path+filename.split('.')[0]+'.hall2'
     with open(filename, '+w') as f:
         for lemma, infl, tags, lang, ops in data:
             tags = ';'.join(tags)
@@ -119,13 +141,13 @@ def al(lemma, inflected):
     ops = levenshtein(lemma, inflected)
     return ops
 
-def get_hallucinated_data(data, vocab, num_examples):
+def get_hallucinated_data(data, vocab, num_examples, replace_symbs=False):
     new_examples = []
     #data, vocab = get_lang_stats(f'../development_languages/{lang}.train')
     
     while len(new_examples) < num_examples:
         x, y, t, l, ops = choice(data)
-        entries = compute_example_with_ngrams(x, y, t, l, vocab)
+        entries = compute_example_with_ngrams(x, y, t, l, vocab, replace_symbs)
         #compute_example_test_patterns(x, y, t, l, vocab)
         entries = [x for x in entries if x not in new_examples]
         if entries:
@@ -144,7 +166,7 @@ def ngram_selector(total, n_grams=[1,2,3]):
             cur.append(c)
     return cur
 
-def compute_example_with_ngrams(x, y, t, l, ngrams):
+def compute_example_with_ngrams(x, y, t, l, ngrams, replace_symbs):
     entries = []
     y = ''.join([c for c in y])
     xs = list(chain(*[list(toolz.accumulate(add, x[i:])) for i in range(len(x))]))
@@ -166,10 +188,13 @@ def compute_example_with_ngrams(x, y, t, l, ngrams):
         
         # only take middle pat of selected substring
         s = s[1:-1]
+        
         # dont replace phonological indicators
-        if s in ["'", '-', 'ː', ':', "`", 'ˈ', '(', ')', '{', '}', '*', '=']:
+        if replace_symbs:
+            if s in ["'", '-', 'ː', ':', "`", 'ˈ', '(', ')', '{', '}', '*', '=']:
+                continue
         #if s in ["'", '-', 'ː', ':', "`"]:
-            continue
+        #    continue
                 
         ny = [c for c in y]
         nx = [c for c in x]

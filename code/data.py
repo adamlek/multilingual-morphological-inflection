@@ -10,9 +10,14 @@ from collections import namedtuple
 from lev import levenshtein
 from operator import add
 import re
+from args import args
+from generate_data import oracle_actions, string_alignment2
+
+hall_languages = ['ame', 'itl', 'ail', 'kod', 'gup', 'sjo', 'ckt', 'vro', 'bra', 'lud', 'evn', 'mag', 'see', 'syc']
 
 device = torch.device('cuda:0')
 ops_vocab = {'<pad>':0, '<end>':1, '<start>':2, 'cp':3, 'add':4, 'sub':5, 'del':6}#, 'delsub':7, 'deladd':8, 'cpdel':9}
+Example = namedtuple('Example', ['lemmas', 'inflections', 'tags', 'ops_y', 'ops_x', 'langs'])
 
 def numericalize(w, d):
     return [d.get(c, d.get('<unk>')) for c in w]
@@ -22,6 +27,9 @@ def add_specials(w, d):
 
 def add_specials_opsx(w, d):
     return [d['<start>']]+w
+
+def add_specials_opsy(w, d):
+    return [d['<start>']]+w+[d['<end>']]
 
 def add_specials_gold(w, d, l):
     return l+w+[d['<end>']]
@@ -42,8 +50,8 @@ def moving_window(n, iterable):
  
 def test_data_batcher(data, bs, char_vocab, tag_vocab, lang_vocab, cl=False):
     dlen = len(data)
-    if not cl:
-        shuffle(data)
+    #if not cl:
+    #    shuffle(data)
 
     data = iter(data)
     Example = namedtuple('Example', ['lemmas', 'tags', 'langs', 'str_tags'])
@@ -54,7 +62,7 @@ def test_data_batcher(data, bs, char_vocab, tag_vocab, lang_vocab, cl=False):
         if batch == []:
             return dataset
         
-        shuffle(batch)
+        #shuffle(batch)
 
         lemmas, _, tags, langs, _ = zip(*batch)
         str_tags = tags
@@ -71,6 +79,47 @@ def test_data_batcher(data, bs, char_vocab, tag_vocab, lang_vocab, cl=False):
         
     return dataset
 
+def precompute_examples(examples, char_vocab, tag_vocab, lang_vocab):
+    precomputed_examples = []
+    for example in examples:
+        lemmas, inflections, tags, langs, ops = example
+                
+        lang = [lang_vocab[langs]]
+        if langs in hall_languages and args.back_inflection:
+            # ops from inflection -> lemma
+            back_operations = oracle_actions(string_alignment2(inflections, lemmas), inflections, lemmas)
+            back_ops_x = add_specials_opsx(numericalize(list(filter(
+                lambda x: 'add' not in x, [x.split('_')[0] for x in back_operations])), ops_vocab), ops_vocab)
+            back_ops_y = add_specials_opsy(numericalize(list(filter(
+                lambda x: 'del' not in x, [x.split('_')[0] for x in back_operations])), ops_vocab), ops_vocab)
+            back_lemma = add_specials_gold(numericalize(lemmas, char_vocab), char_vocab, lang)
+            back_inflection = add_specials_lang(numericalize(inflections, char_vocab), char_vocab, lang)
+            pos_tag = [t for t in tags if t in ['N', 'V', 'ADJ']]
+            back_tags = numericalize(pos_tag, tag_vocab)
+
+            precomputed_examples.append([back_inflection, back_lemma, back_tags, back_ops_y, back_ops_x, lang[0]])
+        
+        ops_x = add_specials_opsx(numericalize(list(filter(lambda x: 'add' not in x, [x.split('_')[0] for x in ops])), ops_vocab), ops_vocab)
+        ops_y = add_specials_opsy(numericalize(list(filter(lambda x: 'del' not in x, [x.split('_')[0] for x in ops])), ops_vocab), ops_vocab)
+        lemma = add_specials_lang(numericalize(lemmas, char_vocab), char_vocab, lang)
+        inflection = add_specials_gold(numericalize(inflections, char_vocab), char_vocab, lang)
+        tags = numericalize(tags, tag_vocab)
+        
+        precomputed_examples.append([lemma, inflection, tags, ops_y, ops_x, lang[0]])
+    return precomputed_examples
+
+def get_batch(batch, char_vocab, tag_vocab, lang_vocab):
+    lemmas, inflections, tags, ops_y, ops_x, langs = zip(*batch)
+    
+    lemmas = torch.tensor(pad_(lemmas, char_vocab['<pad>']), device=device) 
+    inflections = torch.tensor(pad_(inflections, char_vocab['<pad>']), device=device)
+    tags = torch.tensor(pad_(tags, tag_vocab['<pad>']), device=device)
+    langs = torch.tensor(langs, device=device)
+    ops_y = torch.tensor(pad_(ops_y, ops_vocab['<pad>']), device=device)
+    ops_x = torch.tensor(pad_(ops_x, ops_vocab['<pad>']), device=device)
+    
+    return Example(lemmas, inflections, tags, ops_y, ops_x, langs)
+
 def lid_data_batcher(data, bs, char_vocab, tag_vocab, lang_vocab, cl=False):
     dlen = len(data)
     if not cl:
@@ -83,8 +132,8 @@ def lid_data_batcher(data, bs, char_vocab, tag_vocab, lang_vocab, cl=False):
     for _ in range(int(dlen/bs)+1):
         batch = list(toolz.take(bs, data))
         if batch == []:
-            return dataset
-        
+            #return dataset
+            yield []
         shuffle(batch)
 
         lemmas, inflections, tags, langs, ops = zip(*batch)
@@ -107,8 +156,9 @@ def lid_data_batcher(data, bs, char_vocab, tag_vocab, lang_vocab, cl=False):
         ops_y = torch.tensor(pad_(ops_y, ops_vocab['<pad>']), device=device)
         ops_x = torch.tensor(pad_(ops_x, ops_vocab['<pad>']), device=device)
         
-        dataset.append(Example(lemmas, inflections, tags, ops_y, ops_x, langs))
-    return dataset
+        #dataset.append(Example(lemmas, inflections, tags, ops_y, ops_x, langs))
+        yield Example(lemmas, inflections, tags, ops_y, ops_x, langs)
+    #return dataset
 
 def data_batcher(data, bs, char_vocab, tag_vocab, lang_vocab, cl=False):
     dlen = len(data)
