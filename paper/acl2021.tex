@@ -150,7 +150,7 @@ different scripts (for example Arabic, Latin, or Cyrillic), which can
 make it hard to transfer knowledge about one language to another.  To
 account for these factors a model must learn to recognize the
 different morphological processes, the associated grammatical
-features, the script used, and map them into individual languages.
+features, the script used, and map them to languages.
 
 In this paper, we investigate how far these issues can be tackled
 using different training strategies, as opposed to focusing on model
@@ -239,9 +239,9 @@ process is shown in \cref{fig:hall}.
 
 
 Sampling $n$-grams instead of individual characters allow us to retain
-some of the orthography and phonological information present in the
-language.  We generate a set of 10 000 hallucinated examples for each
-of the low-resource languages.
+some of the orthographical information present in the language.  We
+generate a set of 10 000 hallucinated examples for each of the
+low-resource languages.
 
 %For each language with fewer than 10 000 examples, we sample 10 000
 %new examples. A visualization of the final number of examples in each
@@ -328,7 +328,7 @@ $add$ additive attention and $k$ the key:
 \begin{align*}
 	a^{add} & = \mathsf{softmax}(w^\top\mathsf{tanh}(\mathsf{W}_ak + \mathsf{W}_bh))\\
 	att^{add} & = \sum_{t=1}^{T}a_t^{add}h_t^{add}\\
-	a^{cb} & = \mathsf{softabs}(cos(k,h))\\
+	a^{cb} & = \mathsf{softmax}(cos(k,h))\\
 	att^{cb} & = \sum_{t=1}^{T}a_t^{cb}h_t^{cb}\\
 	att & = \mathsf{W}[att^{cb}; att^{add}]
 \end{align*}
@@ -451,7 +451,7 @@ lemma. This is because an additional factor in how difficult an
 example should be considered is its length, i.e. longer words are
 harder to model.
 
-We then sort the examples and use a cumulative density function (CFD)
+We then sort the examples and use a cumulative density function (CDF)
 to map the unigram probabilities to a score in the range $(0, 1]$, we
 denote the training set of pairs and their scores
 $((x,y), s)_0, \ldots, ((x,y), s)_m$, where $m$ indicate the number of
@@ -555,9 +555,10 @@ We implement a simple schedule for calculating the probability of
 using the gold characters or the model's prediction by using a global
 sample probability variable which is updated at each training step. We
 start with a probability \(\rho\) of 100\% to take the gold. At each
-epoch, we decrease \(\rho\) by $\frac{1}{\mathsf{total steps}}$. For each
-character, we take a sample from the Bernoulli distribution of
-parameter \(\rho\) to determine the decision to make.
+training step, we decrease \(\rho\) by
+$\frac{1}{\mathsf{total steps}}$. For each character, we take a sample
+from the Bernoulli distribution of parameter \(\rho\) to determine the
+decision to make.
 
 \subsection{Training}
 
@@ -750,7 +751,7 @@ available for that language in \cref{fig:data_acc}.
             legend pos=north east,
         },
         width=\columnwidth*1.1,
-        height=180pt,
+        height=160pt,
         /pgf/bar width=4pt,
         reverse legend=true,
         xticklabels from table={\testdata}{lang},
@@ -778,7 +779,7 @@ available for that language in \cref{fig:data_acc}.
       axis y line*=right,
       %axis x line*=top
       width=\columnwidth*1.1,
-      height=180pt,
+      height=160pt,
       %xticklabels from table={\testdata}{lang},
       xticklabels={},
       xticklabel style={text width=1cm,align=center,font=\tiny,rotate=90},
@@ -793,34 +794,34 @@ available for that language in \cref{fig:data_acc}.
     \end{axis}
 
 \end{tikzpicture}
-\caption{\label{fig:data_acc} Number of examples (left $x$-axis)
-plotted against the exact match accuracy (right $x$-axis) of our
-system on the development data. The accuracy for any given language is
-shown by the red line.}
+\caption{\label{fig:data_acc} Number of examples (green indicate
+natural and blue hallucinated examples, left $x$-axis) plotted against
+the exact match accuracy (right $x$-axis) of our system on the
+development data. The accuracy for any given language is shown by the
+red line.}
 \end{figure}
 
 We note that for all languages with roughly more than 30 000 examples
 our model performs quite well, achieving around $98\%$ accuracy. When
-we consider languages that have around 10 000 natural examples and
-no hallucinated data the accuracy drops closer to round $50\%$. For
-the languages with hallucinated data, we would expect this trend to
+we consider languages that have around 10 000 natural examples and no
+hallucinated data the accuracy drops closer to round $50\%$. For the
+languages with hallucinated data, we would expect this trend to
 continue as the data is synthetic and does not take into account
-orthographic or phonological information as natural language examples
-do.  That is, when constructing hallucinated examples, orthography and
-phonology are taken into account only indirectly because we consider
-$n$-grams instead of characters when finding the replacement
-sequence. However, we find that for many of the languages with
-hallucinated data the exact match accuracy is above $50\%$, but varies
-a lot depending on the language.
+orthographic information as natural language examples do.  That is,
+when constructing hallucinated examples, orthography is taken into
+account only indirectly because we consider $n$-grams instead of
+characters when finding the replacement sequence. However, we find
+that for many of the languages with hallucinated data the exact match
+accuracy is above $50\%$, but varies a lot depending on the language.
 
 Two of the worst languages in our model is Classical Syriac (syc) and
 Xibe (sjo).  An issue with Classical Syriac is that the language uses
-a unique script, Syriac Abjad, which would make it difficult for the
-model to transfer information about operations and common character
-combinations/transformations into Classical Syriac from related
+a unique script, Syriac Abjad, which makes it difficult for the model
+to transfer information about operations and common character
+combinations and transformations to Classical Syriac from related
 languages such as Modern Standard Arabic (spoken in the region). For
 Xibe there is a similar story, it uses the Sibe alphabet which is a
-variant of Manchu script, which does not occur elsewhere in our
+variant of the Manchu script, which does not occur elsewhere in our
 dataset.
 
 
@@ -861,8 +862,8 @@ depending on the script used. The Afro-Asiatic languages are split
 into two smaller clusters, one cluster containing the languages that
 use Standard Arabic (ara, afv and arz) script and one cluster that use
 Amhraic and Hebrew (amh, heb) script. As mentioned earlier Classical
-Syriac uses its another script and seems to consequently appear in
-another part of the map.
+Syriac from the same language familiy uses another script and
+seems to consequently appear in another part of the figure.
 
 In general, our model's language embeddings appear to learn some
 relationships between languages, but certainly not all of
@@ -892,8 +893,8 @@ strategies: curriculum learning, multi-task learning, scheduled
 sampling and language-wise label smoothing.  The results indicate that
 our model to some extent capture similarities between the input
 languages, however, languages that use different scripts appears
-problematic. A possible solution to these cases would be to use some
-form of transliteration to translate all words to a single script.
+problematic. A solution to these cases would be to use
+transliteration \cite{murikinati-etal-2020-transliteration}.
 
 In future work, we plan on exploring curriculum learning in more detail
 and move away from estimating the competence of our model linearly,
