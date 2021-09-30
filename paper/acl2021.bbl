@@ -1,0 +1,158 @@
+\begin{thebibliography}{19}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+
+\bibitem[{Anastasopoulos and Neubig(2019)}]{DBLP:conf/emnlp/AnastasopoulosN19}
+Antonios Anastasopoulos and Graham Neubig. 2019.
+\newblock \href {https://doi.org/10.18653/v1/D19-1091} {Pushing the limits of
+  low-resource morphological inflection}.
+\newblock In \emph{Proceedings of the 2019 Conference on Empirical Methods in
+  Natural Language Processing and the 9th International Joint Conference on
+  Natural Language Processing, {EMNLP-IJCNLP} 2019, Hong Kong, China, November
+  3-7, 2019}, pages 984--996. Association for Computational Linguistics.
+
+\bibitem[{Bengio et~al.(2015)Bengio, Vinyals, Jaitly, and
+  Shazeer}]{DBLP:conf/nips/BengioVJS15}
+Samy Bengio, Oriol Vinyals, Navdeep Jaitly, and Noam Shazeer. 2015.
+\newblock \href
+  {https://proceedings.neurips.cc/paper/2015/hash/e995f98d56967d946471af29d7bf99f1-Abstract.html}
+  {Scheduled sampling for sequence prediction with recurrent neural networks}.
+\newblock In \emph{Advances in Neural Information Processing Systems 28: Annual
+  Conference on Neural Information Processing Systems 2015, December 7-12,
+  2015, Montreal, Quebec, Canada}, pages 1171--1179.
+
+\bibitem[{Cohn et~al.(2016)Cohn, Hoang, Vymolova, Yao, Dyer, and
+  Haffari}]{DBLP:conf/naacl/CohnHVYDH16}
+Trevor Cohn, Cong Duy~Vu Hoang, Ekaterina Vymolova, Kaisheng Yao, Chris Dyer,
+  and Gholamreza Haffari. 2016.
+\newblock \href {https://doi.org/10.18653/v1/n16-1102} {Incorporating
+  structural alignment biases into an attentional neural translation model}.
+\newblock In \emph{{NAACL} {HLT} 2016, The 2016 Conference of the North
+  American Chapter of the Association for Computational Linguistics: Human
+  Language Technologies, San Diego California, USA, June 12-17, 2016}, pages
+  876--885. The Association for Computational Linguistics.
+
+\bibitem[{Graves et~al.(2014)Graves, Wayne, and Danihelka}]{graves2014neural}
+Alex Graves, Greg Wayne, and Ivo Danihelka. 2014.
+\newblock \href {http://arxiv.org/abs/1410.5401} {Neural turing machines}.
+\newblock \emph{CoRR}, abs/1410.5401.
+
+\bibitem[{Haspelmath and Sims(2013)}]{haspelmath2013understanding}
+Martin Haspelmath and Andrea Sims. 2013.
+\newblock \emph{Understanding morphology}.
+\newblock Routledge.
+
+\bibitem[{Ionin and Wexler(2002)}]{ionin2002easier}
+Tania Ionin and Kenneth Wexler. 2002.
+\newblock Why is ‘is’ easier than ‘-s’?: acquisition of tense/agreement
+  morphology by child second language learners of english.
+\newblock \emph{Second language research}, 18(2):95--136.
+
+\bibitem[{Johnson et~al.(2017)Johnson, Schuster, Le, Krikun, Wu, Chen, Thorat,
+  Vi{\'e}gas, Wattenberg, Corrado et~al.}]{johnson2017google}
+Melvin Johnson, Mike Schuster, Quoc~V Le, Maxim Krikun, Yonghui Wu, Zhifeng
+  Chen, Nikhil Thorat, Fernanda Vi{\'e}gas, Martin Wattenberg, Greg Corrado,
+  et~al. 2017.
+\newblock Google’s multilingual neural machine translation system: Enabling
+  zero-shot translation.
+\newblock \emph{Transactions of the Association for Computational Linguistics},
+  5:339--351.
+
+\bibitem[{Kann and Sch{\"u}tze(2016)}]{kann2016med}
+Katharina Kann and Hinrich Sch{\"u}tze. 2016.
+\newblock Med: The lmu system for the sigmorphon 2016 shared task on
+  morphological reinflection.
+\newblock In \emph{Proceedings of the 14th SIGMORPHON Workshop on Computational
+  Research in Phonetics, Phonology, and Morphology}, pages 62--70.
+
+\bibitem[{Karunaratne et~al.(2021)Karunaratne, Schmuck, Le~Gallo, Cherubini,
+  Benini, Sebastian, and Rahimi}]{karunaratne2021robust}
+Geethan Karunaratne, Manuel Schmuck, Manuel Le~Gallo, Giovanni Cherubini, Luca
+  Benini, Abu Sebastian, and Abbas Rahimi. 2021.
+\newblock Robust high-dimensional memory-augmented neural networks.
+\newblock \emph{Nature communications}, 12(1):1--12.
+
+\bibitem[{Liu et~al.(2020)Liu, Lai, Wong, and Chao}]{DBLP:conf/acl/LiuLWC20}
+Xuebo Liu, Houtim Lai, Derek~F. Wong, and Lidia~S. Chao. 2020.
+\newblock \href {https://doi.org/10.18653/v1/2020.acl-main.41} {Norm-based
+  curriculum learning for neural machine translation}.
+\newblock In \emph{Proceedings of the 58th Annual Meeting of the Association
+  for Computational Linguistics, {ACL} 2020, Online, July 5-10, 2020}, pages
+  427--436. Association for Computational Linguistics.
+
+\bibitem[{Loshchilov and Hutter(2017)}]{DBLP:conf/iclr/LoshchilovH17}
+Ilya Loshchilov and Frank Hutter. 2017.
+\newblock \href {https://openreview.net/forum?id=Skq89Scxx} {{SGDR:} stochastic
+  gradient descent with warm restarts}.
+\newblock In \emph{5th International Conference on Learning Representations,
+  {ICLR} 2017, Toulon, France, April 24-26, 2017, Conference Track
+  Proceedings}. OpenReview.net.
+
+\bibitem[{Makarov et~al.(2017)Makarov, Ruzsics, and
+  Clematide}]{DBLP:conf/conll/MakarovRC17}
+Peter Makarov, Tatiana Ruzsics, and Simon Clematide. 2017.
+\newblock \href {https://doi.org/10.18653/v1/K17-2004} {Align and copy: {UZH}
+  at {SIGMORPHON} 2017 shared task for morphological reinflection}.
+\newblock In \emph{Proceedings of the CoNLL {SIGMORPHON} 2017 Shared Task:
+  Universal Morphological Reinflection, Vancouver, BC, Canada, August 3-4,
+  2017}, pages 49--57. Association for Computational Linguistics.
+
+\bibitem[{Murikinati et~al.(2020)Murikinati, Anastasopoulos, and
+  Neubig}]{murikinati-etal-2020-transliteration}
+Nikitha Murikinati, Antonios Anastasopoulos, and Graham Neubig. 2020.
+\newblock \href {https://doi.org/10.18653/v1/2020.sigmorphon-1.22}
+  {Transliteration for cross-lingual morphological inflection}.
+\newblock In \emph{Proceedings of the 17th SIGMORPHON Workshop on Computational
+  Research in Phonetics, Phonology, and Morphology}, pages 189--197, Online.
+  Association for Computational Linguistics.
+
+\bibitem[{Platanios et~al.(2019)Platanios, Stretcu, Neubig, Poczos, and
+  Mitchell}]{platanios2019competence}
+Emmanouil~Antonios Platanios, Otilia Stretcu, Graham Neubig, Barnabas Poczos,
+  and Tom~M Mitchell. 2019.
+\newblock Competence-based curriculum learning for neural machine translation.
+\newblock \emph{arXiv preprint arXiv:1903.09848}.
+
+\bibitem[{Raffel et~al.(2019)Raffel, Shazeer, Roberts, Lee, Narang, Matena,
+  Zhou, Li, and Liu}]{raffel2019exploring}
+Colin Raffel, Noam Shazeer, Adam Roberts, Katherine Lee, Sharan Narang, Michael
+  Matena, Yanqi Zhou, Wei Li, and Peter~J Liu. 2019.
+\newblock Exploring the limits of transfer learning with a unified text-to-text
+  transformer.
+\newblock \emph{arXiv preprint arXiv:1910.10683}.
+
+\bibitem[{Sharma et~al.(2018)Sharma, Katrapati, and
+  Sharma}]{sharma-etal-2018-iit}
+Abhishek Sharma, Ganesh Katrapati, and Dipti~Misra Sharma. 2018.
+\newblock \href {https://doi.org/10.18653/v1/K18-3013} {{IIT}({BHU}){--}{IIITH}
+  at {C}o{NLL}{--}{SIGMORPHON} 2018 shared task on universal morphological
+  reinflection}.
+\newblock In \emph{Proceedings of the {C}o{NLL}{--}{SIGMORPHON} 2018 Shared
+  Task: Universal Morphological Reinflection}, pages 105--111, Brussels.
+  Association for Computational Linguistics.
+
+\bibitem[{Slabakova(2010)}]{slabakova2010easy}
+Roumyana Slabakova. 2010.
+\newblock What is easy and what is hard to acquire in a second language?
+
+\bibitem[{Smit et~al.(2014)Smit, Virpioja, Gr{\"{o}}nroos, and
+  Kurimo}]{DBLP:conf/eacl/SmitVGK14}
+Peter Smit, Sami Virpioja, Stig{-}Arne Gr{\"{o}}nroos, and Mikko Kurimo. 2014.
+\newblock \href {https://doi.org/10.3115/v1/e14-2006} {Morfessor 2.0: Toolkit
+  for statistical morphological segmentation}.
+\newblock In \emph{Proceedings of the 14th Conference of the European Chapter
+  of the Association for Computational Linguistics, {EACL} 2014, April 26-30,
+  2014, Gothenburg, Sweden}, pages 21--24. The Association for Computer
+  Linguistics.
+
+\bibitem[{Vaswani et~al.(2017)Vaswani, Shazeer, Parmar, Uszkoreit, Jones,
+  Gomez, Kaiser, and Polosukhin}]{DBLP:conf/nips/VaswaniSPUJGKP17}
+Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones,
+  Aidan~N. Gomez, Lukasz Kaiser, and Illia Polosukhin. 2017.
+\newblock \href
+  {https://proceedings.neurips.cc/paper/2017/hash/3f5ee243547dee91fbd053c1c4a845aa-Abstract.html}
+  {Attention is all you need}.
+\newblock In \emph{Advances in Neural Information Processing Systems 30: Annual
+  Conference on Neural Information Processing Systems 2017, December 4-9, 2017,
+  Long Beach, CA, {USA}}, pages 5998--6008.
+
+\end{thebibliography}

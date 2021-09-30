@@ -2,53 +2,52 @@ This is BibTeX, Version 0.99d (TeX Live 2017/Debian)
 Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
 The top-level auxiliary file: acl2021.aux
 The style file: acl_natbib.bst
-I found no \citation commands---while reading file acl2021.aux
 Reallocated glb_str_ptr (elt_size=4) to 20 items from 10.
 Reallocated global_strs (elt_size=20001) to 20 items from 10.
 Reallocated glb_str_end (elt_size=4) to 20 items from 10.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
-Database file #1: anthology.bib
-Database file #2: acl2021.bib
+Database file #1: acl2021.bib
 Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
-You've used 0 entries,
+Warning--empty journal in slabakova2010easy
+You've used 19 entries,
             3571 wiz_defined-function locations,
-            692 strings with 5475 characters,
-and the built_in function-call counts, 45 in all, are:
-= -- 0
-> -- 0
-< -- 0
-+ -- 0
-- -- 0
-* -- 2
-:= -- 30
-add.period$ -- 0
-call.type$ -- 0
-change.case$ -- 0
-chr.to.int$ -- 0
-cite$ -- 0
-duplicate$ -- 0
-empty$ -- 1
-format.name$ -- 0
-if$ -- 1
+            838 strings with 12236 characters,
+and the built_in function-call counts, 15881 in all, are:
+= -- 1368
+> -- 828
+< -- 16
++ -- 262
+- -- 243
+* -- 1084
+:= -- 2330
+add.period$ -- 83
+call.type$ -- 19
+change.case$ -- 196
+chr.to.int$ -- 19
+cite$ -- 20
+duplicate$ -- 1060
+empty$ -- 1112
+format.name$ -- 308
+if$ -- 3499
 int.to.chr$ -- 1
 int.to.str$ -- 1
-missing$ -- 0
-newline$ -- 4
-num.names$ -- 0
-pop$ -- 0
+missing$ -- 215
+newline$ -- 98
+num.names$ -- 76
+pop$ -- 485
 preamble$ -- 1
-purify$ -- 0
+purify$ -- 156
 quote$ -- 0
-skip$ -- 1
+skip$ -- 731
 stack$ -- 0
-substring$ -- 0
-swap$ -- 0
-text.length$ -- 0
+substring$ -- 584
+swap$ -- 561
+text.length$ -- 10
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 0
-warning$ -- 0
-while$ -- 0
+type$ -- 168
+warning$ -- 1
+while$ -- 93
 width$ -- 0
-write$ -- 3
-(There was 1 error message)
+write$ -- 253
+(There was 1 warning)

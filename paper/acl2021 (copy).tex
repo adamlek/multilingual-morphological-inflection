@@ -41,45 +41,45 @@
         compat/bar nodes=1.8,
     }
     \pgfplotstableread{
-        lang natural hallucinated test dev
-        tur	100310 0 98.69 98.86 
-        olo	100062 0 99.39 99.36 
-        vep	100053 0 99.26 99.3 
-        sah	100046 0 99.86 99.86
-        por	100041 0 98.41 98.3
-        pol	100039 0 97.34 97.51
-        ara	100027 0 98.69 98.59
-        tyv	100015 0 98.61 98.51
-        kmr	100003 0 98.31 98.32
-        rus	100002 0 97.02 96.8
-        spa	100001 0 98.66 98.65
-        aym	100000 0 99.80 99.75
-        deu	100000 0 93.95 93.28
-        ces	94169 0 93.41 94.01
-        krl	78673 0 97.62 97.83
-        bul	39011 0 98.16 98.02
-        nld	38827 0 92.51 92.31
-        amh	32254 0 97.44 96.87
-        heb	23204 0 95.86 94.97
-        afb	22165 0 90.29 91.29
-        arz	17683 0 91.65 92.48
-        cni	13948 0 91.99 91.38
-        ckb	11577 0 68.27 68.91
-        ind	11072 0 62.32 60.28
-        evn	5216 10000 51.7 50.41
-        see	3801 10000 49.77 50.37
-        ame	2524 10000 70.72 73.67
-        itl	1246 10000 22.63 22.16
-        syc	1217 10000 9.43 15.7
-        bra	1082 10000 62.38 64.05
-        ail	918 10000 6.84 7.69
-        mag	854 10000 70.20 63.64
-        vro	804 10000 82.17 80.7
-        kod	323 10000 79.57 80.43
-        sjo	290 10000 29.76 32.43
-        gup	214 10000 22.95 26.67
-        ckt	132 10000 60.53 55.56
-        lud	128 10000 62.16 66.67
+        lang natural hallucinated all nosc nols nomt
+        tur	100310 0 98.85 98.86 98.99 98.75
+        olo	100062 0 99.35 99.37 99.45 99.33
+        vep	100053 0 99.33 99.24 99.31 99.15
+        sah	100046 0 99.87 99.84 99.92 99.87
+        por	100041 0 98.37 98.63 98.33 98.19
+        pol	100039 0 97.47 98.01 97.32 97.47
+        ara	100027 0 98.58 89.72 98.82 98.52
+        tyv	100015 0 98.49 98.65 99.03 98.23
+        kmr	100003 0 98.31 98.30 98.14 98.24
+        rus	100002 0 96.86 97.1 96.83 96.77
+        spa	100001 0 98.66 98.48 98.9 98.71
+        aym	100000 0 99.80 99.83 99.86 99.78
+        deu	100000 0 93.25 94.41 92.91 93.39
+        ces	94169 0 93.96 93.77 93.75 93.73
+        krl	78673 0 97.87 98.16 97.91 97.57
+        bul	39011 0 98.04 90.57 98.21 97.92
+        nld	38827 0 92.33 93.63 92.62 91.99
+        amh	32254 0 97.11 97.57 97.08 96.91
+        heb	23204 0 95.0 96.13 95.22 96.67
+        afb	22165 0 91.16 90.85 89.92 90.3
+        arz	17683 0 92.52 92.36 91.72 92.16
+        cni	13948 0 91.43 92.65 91.94 92.19
+        ckb	11577 0 71.72 86.5 55.96 75.44
+        ind	11072 0 61.94 70.24 61.37 61.24
+        evn	5216 10000 52.17 51.08 50.68 52.03
+        see	3801 10000 52.42 76.21 48.14 55.02
+        ame	2524 10000 74.17 67.11 71.74 71.89
+        itl	1246 10000 31.31 60.3 27.08 32.15
+        syc	1217 10000 15.7 27.33 14.53 15.12
+        bra	1082 10000 62.09 62.09 56.21 62.09
+        ail	918 10000 91.98 93.28 90.97 91.75
+        mag	854 10000 63.64 70.25 63.64 66.94
+        vro	804 10000 78.07 80.7 80.7 81.58
+        kod	323 10000 80.43 82.61 82.61 82.61
+        sjo	290 10000 36.59 46.24 36.59 34.15
+        gup	214 10000 26.67 33.33 16.67 33.33
+        ckt	132 10000 55.56 61.11 66.67 55.56
+        lud	128 10000 66.67 72.22 72.22 72.22
     }\testdata
 
     % 240 000 / 180 000
@@ -628,50 +628,49 @@ the gold inflected form.
 %
 \begin{table}[ht!]
 \centering
-\begin{tabular}{lrrrr}
-& \multicolumn{2}{c}{Test} & \multicolumn{2}{c}{Dev} \\
-
-\textsc{Lang} & \textsc{EM} & \textsc{Lev} & \textsc{EM} & \textsc{Lev}  \\
-%  \hline
+\begin{tabular}{lrr}
+\textsc{Lang} & \textsc{EM} & \textsc{Lev dist}  \\
   \hline
-afb & 90.29 & 0.17 & 91.29 & 0.15 \\
-ail & 6.84 & 3.6 & 7.69 & 3.62 \\
-ame & 70.72 & 0.75 & 73.67 & 0.64 \\
-amh & 97.44 & 0.04 & 96.87 & 0.04 \\
-ara & 98.69 & 0.03 & 98.59 & 0.04 \\
-arz & 91.65 & 0.14 & 92.48 & 0.14 \\
-aym & 99.8 & 0.0 & 99.75 & 0.01 \\
-bra & 62.38 & 0.71 & 64.05 & 0.59 \\
-bul & 98.16 & 0.03 & 98.02 & 0.03 \\
-ces & 93.41 & 0.12 & 94.01 & 0.12 \\
-ckb & 68.27 & 0.77 & 68.91 & 0.73 \\
-ckt & 60.53 & 1.37 & 55.56 & 1.72 \\
-cni & 91.99 & 0.11 & 91.38 & 0.12 \\
-deu & 93.95 & 0.09 & 93.28 & 0.1 \\
-evn & 51.7 & 1.47 & 50.41 & 1.5 \\
-gup & 22.95 & 3.92 & 26.67 & 3.1 \\
-heb & 95.86 & 0.09 & 94.97 & 0.1 \\
-ind & 62.32 & 1.3 & 60.28 & 1.33 \\
-itl & 22.63 & 2.89 & 22.16 & 3.11 \\
-kmr & 98.19 & 0.02 & 98.32 & 0.02 \\
-kod & 79.57 & 0.58 & 80.43 & 0.37 \\
-krl & 97.62 & 0.05 & 97.83 & 0.04 \\
-lud & 62.16 & 0.73 & 66.67 & 0.44 \\
-mag & 70.2 & 0.53 & 63.64 & 0.71 \\
-nld & 92.51 & 0.12 & 92.31 & 0.12 \\
-olo & 99.39 & 0.01 & 99.36 & 0.01 \\
-pol & 97.34 & 0.04 & 97.51 & 0.04 \\
-por & 98.41 & 0.03 & 98.3 & 0.03 \\
-rus & 97.02 & 0.05 & 96.8 & 0.05 \\
-sah & 99.86 & 0.0 & 99.86 & 0.0 \\
-see & 49.77 & 1.7 & 50.37 & 1.51 \\
-sjo & 29.76 & 1.73 & 32.43 & 1.83 \\
-spa & 98.66 & 0.02 & 98.65 & 0.02 \\
-syc & 9.43 & 5.25 & 15.7 & 5.41 \\
-tur & 98.69 & 0.03 & 98.86 & 0.03 \\
-tyv & 98.61 & 0.03 & 98.51 & 0.03 \\
-vep & 99.26 & 0.01 & 99.3 & 0.01 \\
-vro & 82.17 & 0.31 & 80.7 & 0.42 \\
+  afb & 91.16\% & 0.15 \\
+  ail & 91.98\% & 0.22 \\
+  ame & 74.17\% & 0.51 \\
+  amh & 97.11\% & 0.04 \\
+  ara & 98.58\% & 0.03 \\
+  arz & 92.52\% & 0.13 \\
+  aym & 99.80\% & 0.00 \\
+  bra & 62.09\% & 0.62 \\
+  bul & 98.04\% & 0.03 \\
+  ces & 93.96\% & 0.11 \\
+  ckb & 71.72\% & 0.52 \\
+  ckt & 55.56\% & 1.28 \\
+  cni & 91.43\% & 0.12 \\
+  deu & 93.25\% & 0.10 \\
+  evn & 52.17\% & 1.29 \\
+  gup & 26.67\% & 3.53 \\
+  heb & 95.00\% & 0.10 \\
+  ind & 61.94\% & 1.22 \\
+  itl & 31.31\% & 1.94 \\
+  kmr & 98.31\% & 0.02 \\
+  kod & 80.43\% & 0.37 \\
+  krl & 97.87\% & 0.03 \\
+  lud & 66.67\% & 0.44 \\
+  mag & 63.64\% & 0.72 \\
+  nld & 92.33\% & 0.12 \\
+  olo & 99.35\% & 0.01 \\
+  pol & 97.47\% & 0.04 \\
+  por & 98.37\% & 0.03 \\
+  rus & 96.86\% & 0.05 \\
+  sah & 99.87\% & 0.00 \\
+  see & 52.42\% & 1.06 \\
+  sjo & 36.59\% & 1.68 \\
+  spa & 98.66\% & 0.02 \\
+  syc & 15.70\% & 4.79 \\
+  tur & 98.85\% & 0.02 \\
+  tyv & 98.49\% & 0.02 \\
+  vep & 99.33\% & 0.01 \\
+  vro & 78.07\% & 0.39 \\
+  \hline
+  Mean & 80.27\% & 0.57
 \end{tabular} 
 \caption{Results on the development data.}
 \label{tab:accuracy-dev}
@@ -703,11 +702,11 @@ available for that language in \cref{fig:data_acc}.
         xticklabel style={text width=1cm,align=center,font=\tiny,rotate=90},
         yticklabel style={text width=1cm,align=center,font=\tiny,rotate=90}
     ]
-        \addplot [fill=green!30]
+        \addplot [fill=green!50]
             table [y=natural, meta=lang, x expr=\coordindex]
                 {\testdata};
                     %\addlegendentry{natural}
-        \addplot [fill=blue!30]
+        \addplot [fill=blue!50]
             table [y=hallucinated, meta=lang, x expr=\coordindex]
                 {\testdata};
                     %\addlegendentry{hallucinated}
@@ -731,10 +730,10 @@ available for that language in \cref{fig:data_acc}.
       yticklabel style={text width=1cm,align=center,font=\tiny,rotate=90}
       ]
       \addplot [red]
-          table [y=test, meta=lang, x expr=\coordindex] {\testdata};
+          table [y=all, meta=lang, x expr=\coordindex] {\testdata};
                     %\addlegendentry{acc}
-          \addplot [blue]
-          table [y=dev, meta=lang, x expr=\coordindex] {\testdata};
+      %\addplot [blue]
+      %    table [y=nosc, meta=lang, x expr=\coordindex] {\testdata};
 
       %\addplot [green]
       %    table [y=nols, meta=lang, x expr=\coordindex] {\testdata};
@@ -745,7 +744,8 @@ available for that language in \cref{fig:data_acc}.
 \caption{\label{fig:data_acc} Number of examples (green indicate
 natural and blue hallucinated examples, left $x$-axis) plotted against
 the exact match accuracy (right $x$-axis) of our system on the
-development data (blue) and the test data (red).}
+development data. The accuracy for any given language is shown by the
+red line.}
 \end{figure}
 
 We note that for all languages with roughly more than 30 000 examples
@@ -830,48 +830,44 @@ scheduled sampling degrade the overall performance by $3.04$
 percentage points, increasing our total average accuracy to $83.3$
 percentage points, primarily affecting low-resource languages.
 
-%\begin{figure*}
-%\begin{tikzpicture}
-%    \begin{axis}[
-%    ybar interval,
-%        ymin=0,
-%        ymax=100,
-%        ytick style={draw=none},
-%        %scaled x ticks={false},
-%        xtick=data,
-%        legend style={
-%            cells={anchor=west},
-%            legend pos=north east,
-%        },
-%        %group gap/.initial=3pt,
-%        width=\columnwidth*2.2,
-%        height=160pt,
-%        /pgf/bar width=4pt,
-%        reverse legend=true,
-%        xticklabels from table={\testdata}{lang},
-%        xticklabel style={text width=1cm,align=center,font=\tiny,rotate=90},
-%        yticklabel style={text width=0.25cm,align=center,font=\tiny}
-%    ]
-%        \addplot [fill=green!50]
-%            table [y=all, meta=lang, x expr=\coordindex]
-%            {\testdata};
-%        \addplot [fill=blue!50]
-%            table [y=nosc, meta=lang, x expr=\coordindex]
-%            {\testdata};
-%        \addplot [fill=red!50]
-%            table [y=nols, meta=lang, x expr=\coordindex]
-%            {\testdata};
-%        \addplot [fill=orange!50]
-%            table [y=nomt, meta=lang, x expr=\coordindex]
-%            {\testdata};
-%        \end{axis}
-%\end{tikzpicture}
-%\caption{\label{fig:data_acc} Number of examples (green indicate
-%natural and blue hallucinated examples, left $x$-axis) plotted against
-%the exact match accuracy (right $x$-axis) of our system on the
-%development data. The accuracy for any given language is shown by the
-%red line.}
-%\end{figure*}
+\begin{figure*}
+\begin{tikzpicture}
+    \begin{axis}[
+    ybar interval,
+        ymin=0,
+        ymax=100,
+        ytick style={draw=none},
+        %scaled x ticks={false},
+        xtick=data,
+        legend style={
+            cells={anchor=west},
+            legend pos=north east,
+        },
+        %group gap/.initial=3pt,
+        width=\columnwidth*2.2,
+        height=160pt,
+        /pgf/bar width=4pt,
+        reverse legend=true,
+        xticklabels from table={\testdata}{lang},
+        xticklabel style={text width=1cm,align=center,font=\tiny,rotate=90},
+        yticklabel style={text width=0.25cm,align=center,font=\tiny}
+    ]
+        \addplot [fill=green!50]
+            table [y=all, meta=lang, x expr=\coordindex]
+            {\testdata};
+        \addplot [fill=blue!50]
+            table [y=nosc, meta=lang, x expr=\coordindex]
+            {\testdata};
+        \addplot [fill=red!50]
+            table [y=nols, meta=lang, x expr=\coordindex]
+            {\testdata};
+        \addplot [fill=orange!50]
+            table [y=nomt, meta=lang, x expr=\coordindex]
+            {\testdata};
+        \end{axis}
+\end{tikzpicture}
+\caption{\label{fig:data_acc} Ablation study of the performance of our system excluding scheduled sampling (blue), multi-task learning (orange) and language-wise label smoothing (red). The performance of our systems using all training augmentations are shown by the green bar.}
+\end{figure*}
 
 \section{Conclusions and future Work}
 

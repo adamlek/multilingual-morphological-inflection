@@ -196,7 +196,7 @@ class Inflector(nn.Module):
         adapted version of: https://github.com/budzianowski/PyTorch-Beam-Search-Decoding/blob/master/decode_beam.py
         '''
 
-        beam_width = 10 # 10
+        beam_width = 2 # 10, 5
         topk = 1  # how many sentence do you want to generate
         decoded_batch = []
         
@@ -235,7 +235,7 @@ class Inflector(nn.Module):
             # start beam search
             while True:
                 # give up when decoding takes too long
-                if qsize > 2000: break
+                if qsize > 1000: break # 2000
 
                 # fetch the best node
                 score, n = nodes.get()
@@ -258,11 +258,11 @@ class Inflector(nn.Module):
 
                 # decode one step
                 hx, cx, decoder_preds, _, _ = self.decode_step(decoder_input, 
-                                                                         hx, cx, 
-                                                                         sent_lemma_outputs, 
-                                                                         sent_lemma_mask, 
-                                                                         sent_tags_outputs, 
-                                                                         sent_tags_mask)
+                                                                hx, cx, 
+                                                                sent_lemma_outputs, 
+                                                                sent_lemma_mask, 
+                                                                sent_tags_outputs, 
+                                                                sent_tags_mask)
                 
                 decoder_preds = F.log_softmax(decoder_preds, 1)
                 #logp[:,:1] = float('-inf')
